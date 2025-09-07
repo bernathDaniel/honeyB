@@ -1,0 +1,29 @@
+############################################################
+#                       xrun options                       #
+#----------------------------------------------------------#
+#                                                          #
+# ENICS RUN CMD : qrun xrun -f ../scripts/xrun_options.rtl #
+#                                                          #
+############################################################
+
+# Includes all the necessary flags and files to run the UVM TB.
+
+-sv
+-uvm
+-debug
+#-gui
+-log ../workspace/xrun.log
+-access +rwc
+-timescale 1ns/1ps
+
+
+# Standard UVM library
++define+UVM_NO_DEPRECATED 
+
+-f ../src/uvm_src_list.txt
+-f ../src/dut_src_list.txt
+
+
+# Simulation scripts
+# -input ../scripts/simulation.tcl
+#-input ../scripts/gpp_compare.tcl

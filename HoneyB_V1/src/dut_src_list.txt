@@ -1,0 +1,3 @@
+../src/rtl/xbox_xlr_dmy1.sv
+../src/tb/top_tb/sv/top_th.sv
+../src/tb/top_tb/sv/top_tb.sv
