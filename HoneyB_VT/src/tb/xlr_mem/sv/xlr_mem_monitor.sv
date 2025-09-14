@@ -93,8 +93,8 @@ task xlr_mem_monitor::do_mon();
         m_trans_in.mem_be     = m_xlr_mem_if.get_be_all   ();
         m_trans_in.mem_rd     = m_xlr_mem_if.get_rd_all   ();
         m_trans_in.mem_wr     = m_xlr_mem_if.get_wr_all   ();
-        m_trans_in.set_mem(MEMA); // rst_n is for all TX fields..
-        m_trans_in.set_mode("all"); // although these are default, this is mainly for emphasizing that this is what it should be.
+        //m_trans_in.set_mem(MEMA); // rst_n is for all TX fields..
+        //m_trans_in.set_mode("all"); // although these are default, this is mainly for emphasizing that this is what it should be.
         `honeyb("MEM MON", "rst_n detected, Broadcasting...")
         analysis_port_in.write(m_trans_in);
       end

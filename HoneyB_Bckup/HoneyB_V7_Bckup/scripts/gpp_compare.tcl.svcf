@@ -1,0 +1,146 @@
+# SimVision Command Script (Wed Mar 19 11:20:31 PM IST 2025)
+#
+# Version 22.03.s002
+#
+# You can restore this configuration with:
+#
+#      xrun -f ../scripts/xrun_options.rtl -input /project/test_project/users/bernatd/ws/Mannix2/Mannix2/standalone/UVM/MatMul_2x2_Hybrid+Scrbrd/scripts/gpp_compare.tcl
+#
+
+
+#
+# Preferences
+#
+preferences set toolbar-Standard-WatchWindow {
+  usual
+  shown 0
+}
+preferences set plugin-enable-svdatabrowser-new 1
+preferences set toolbar-Windows-WatchWindow {
+  usual
+  shown 0
+}
+preferences set plugin-enable-groupscope 0
+preferences set plugin-enable-interleaveandcompare 0
+preferences set plugin-enable-waveformfrequencyplot 0
+preferences set toolbar-SimControl-WatchWindow {
+  usual
+  shown 0
+}
+preferences set toolbar-TimeSearch-WatchWindow {
+  usual
+  shown 0
+}
+
+#
+# Simulator
+#
+database require simulator -hints {
+	simulator "xrun -f ../scripts/xrun_options.rtl -input gpp_compare.tcl"
+}
+
+#
+# Mnemonic Maps
+#
+mmap new  -reuse -name {Boolean as Logic} -radix %b -contents {{%c=FALSE -edgepriority 1 -shape low}
+{%c=TRUE -edgepriority 1 -shape high}}
+mmap new  -reuse -name {Example Map} -radix %x -contents {{%b=11???? -bgcolor orange -label REG:%x -linecolor yellow -shape bus}
+{%x=1F -bgcolor red -label ERROR -linecolor white -shape EVENT}
+{%x=2C -bgcolor red -label ERROR -linecolor white -shape EVENT}
+{%x=* -label %x -linecolor gray -shape bus}}
+
+#
+# Design Browser windows
+#
+if {[catch {window new WatchList -name "Design Browser 1" -geometry 730x500+261+33}] != ""} {
+    window geometry "Design Browser 1" 730x500+261+33
+}
+window target "Design Browser 1" on
+browser using {Design Browser 1}
+browser set -scope  simulator::top_tb.th._gpp_if 
+browser set \
+    -signalsort name
+browser yview see  simulator::top_tb.th._gpp_if 
+browser timecontrol set -lock 0
+
+#
+# Waveform windows
+#
+if {[catch {window new WaveWindow -name "Waveform 4" -geometry 1280x580+0+25}] != ""} {
+    window geometry "Waveform 4" 1280x580+0+25
+}
+window target "Waveform 4" on
+waveform using {Waveform 4}
+waveform sidebar visibility partial
+waveform set \
+    -primarycursor TimeA \
+    -signalnames name \
+    -signalwidth 175 \
+    -units ps \
+    -valuewidth 75
+waveform baseline set -time 0
+
+set id [waveform add -signals  {
+	simulator::top_tb.th._gpp_if.clk
+	} ]
+set id [waveform add -signals  {
+	simulator::top_tb.th._gpp_if.rst_n
+	} ]
+set id [waveform add -signals  {
+	simulator::top_tb.th.dut.start
+	} ]
+set id [waveform add -signals  {
+	{simulator::top_tb.th.dut.state[4:0]}
+	} ]
+set id [waveform add -signals  {
+	{simulator::top_tb.th.dut.next_state[4:0]}
+	} ]
+set id [waveform add -signals  {
+	simulator::top_tb.th.dut.busy
+	} ]
+set id [waveform add -signals  {
+	simulator::top_tb.th.dut.done
+	} ]
+set id [waveform add -signals  {
+	{simulator::top_tb.th._gpp_if.host_regso[1]}
+	} ]
+waveform format $id -radix %d -color #0000ff -namecolor #0000ff
+set id [waveform add -signals  {
+	{simulator::top_tb.th.dut.host_regs_data_out[1]}
+	} ]
+waveform format $id -radix %d -color #0000ff -namecolor #0000ff
+set id [waveform add -signals  {
+	{simulator::top_tb.th._gpp_if.host_regso_valid[1]}
+	} ]
+waveform format $id -color #0000ff -namecolor #0000ff
+set id [waveform add -signals  {
+	{simulator::top_tb.th.dut.host_regs_valid_out[1]}
+	} ]
+waveform format $id -color #0000ff -namecolor #0000ff
+set id [waveform add -signals  {
+	{simulator::top_tb.th._gpp_if.host_regso[0]}
+	} ]
+waveform format $id -radix %d -color #ff0000 -namecolor #ff0000
+set id [waveform add -signals  {
+	{simulator::top_tb.th.dut.host_regs_data_out[0]}
+	} ]
+waveform format $id -radix %d -color #ff0000 -namecolor #ff0000
+set id [waveform add -signals  {
+	{simulator::top_tb.th._gpp_if.host_regso_valid[0]}
+	} ]
+waveform format $id -color #ff0000 -namecolor #ff0000
+set id [waveform add -signals  {
+	{simulator::top_tb.th.dut.host_regs_valid_out[0]}
+	} ]
+waveform format $id -color #ff0000 -namecolor #ff0000
+
+waveform xview limits 616762ps 703238ps
+
+#
+# Waveform Window Links
+#
+
+#
+# Layout selection
+#
+

@@ -47,9 +47,23 @@ interface xlr_mem_if #(parameter NUM_MEMS = 2, LOG2_LINES_PER_MEM = 8) (
     //                   Get Methods                  //
     //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-    function logic  get_clk();    return clk;   endfunction
+    /*############################################################################################################################*/
+
+    function logic  get_clk();          return clk;         endfunction
+
+    task clk_wait_posedge();          @(posedge clk);       endtask
+
+    task clk_wait_negedge();          @(negedge clk);       endtask
+
+    /*############################################################################################################################*/
 
     function logic  get_rst_n();  return rst_n; endfunction
+
+    task rst_n_wait_posedge();        @(posedge rst_n);     endtask
+
+    task rst_n_wait_until_deassert(); wait(rst_n == 1'b1);  endtask
+
+    /*############################################################################################################################*/
 
     function logic [NUM_MEMS-1:0][7:0][31:0] get_rdata_all();
       return mem_rdata;
@@ -62,6 +76,8 @@ interface xlr_mem_if #(parameter NUM_MEMS = 2, LOG2_LINES_PER_MEM = 8) (
       end
       return mem_rdata[i];
     endfunction
+
+    /*############################################################################################################################*/
     
     function logic [NUM_MEMS-1:0][LOG2_LINES_PER_MEM-1:0] get_addr_all(); // Needed for rst_n assertion handling in Monitor
       return mem_addr;
@@ -75,6 +91,8 @@ interface xlr_mem_if #(parameter NUM_MEMS = 2, LOG2_LINES_PER_MEM = 8) (
       return mem_addr[i];
     endfunction
 
+    /*############################################################################################################################*/
+
     function logic [NUM_MEMS-1:0][7:0][31:0] get_wdata_all();
       return mem_wdata;
     endfunction
@@ -86,6 +104,8 @@ interface xlr_mem_if #(parameter NUM_MEMS = 2, LOG2_LINES_PER_MEM = 8) (
       end
       return mem_wdata[i];
     endfunction
+
+    /*############################################################################################################################*/
 
     function logic [NUM_MEMS-1:0] get_rd_all();
       return mem_rd;
@@ -99,6 +119,8 @@ interface xlr_mem_if #(parameter NUM_MEMS = 2, LOG2_LINES_PER_MEM = 8) (
       return mem_rd[i];
     endfunction
 
+    /*############################################################################################################################*/
+
     function logic [NUM_MEMS-1:0] get_wr_all();
       return mem_wr;
     endfunction
@@ -110,6 +132,8 @@ interface xlr_mem_if #(parameter NUM_MEMS = 2, LOG2_LINES_PER_MEM = 8) (
       end
       return mem_wr[i];
     endfunction
+
+    /*############################################################################################################################*/
 
     function logic [NUM_MEMS-1:0][31:0] get_be_all();
       return mem_be;
@@ -123,14 +147,7 @@ interface xlr_mem_if #(parameter NUM_MEMS = 2, LOG2_LINES_PER_MEM = 8) (
       return mem_be[i];
     endfunction
 
-
-    task clk_wait_posedge();          @(posedge clk);       endtask
-
-    task clk_wait_negedge();          @(negedge clk);       endtask
-
-    task rst_n_wait_posedge();        @(posedge rst_n);     endtask
-
-    task rst_n_wait_until_deassert(); wait(rst_n == 1'b1);  endtask
+    /*############################################################################################################################*/
 
     task rd_wait_until_asserted(input int mem_idx);
       assert (mem_idx >= 0 && mem_idx < NUM_MEMS) else begin
@@ -164,12 +181,7 @@ interface xlr_mem_if #(parameter NUM_MEMS = 2, LOG2_LINES_PER_MEM = 8) (
     task rst_pin_wig();
       mem_rdata <= '0;
     endtask
-
-    /*task pin_sample( // A pin sampling method designed for the Monitor - 
-      output logic [NUM_MEMS-1:0] [7:0][31:0] m_wdata
-    );
-      m_wdata <= mem_wdata;
-    endtask : wr*/
+    
   endclass : xlr_mem_class
   
   // Function to override abstract base class with concrete implementation of class

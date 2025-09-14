@@ -2,7 +2,7 @@
 #                       xrun options                       #
 #----------------------------------------------------------#
 #                                                          #
-# ENICS RUN CMD : qrun xrun -f ../scripts/xrun_options.rtl #
+# ENICS RUN CMD : run xrun -f ../scripts/xrun_options.rtl #
 #                                                          #
 ############################################################
 

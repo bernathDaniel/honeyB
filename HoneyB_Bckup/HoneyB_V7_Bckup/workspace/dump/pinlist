@@ -1,0 +1,17 @@
+!xlr_mem_if
+[0:0][7:0][31:0] xlr_mem_rdata	[0:0][7:0][31:0] mem_rdata
+[0:0][3:0] xlr_mem_addr			[0:0][3:0] mem_addr
+[0:0][7:0][31:0] xlr_mem_wdata	[0:0][7:0][31:0] mem_wdata
+[0:0][31:0] xlr_mem_be			[0:0][31:0] mem_be
+[0:0] xlr_mem_rd				[0:0] mem_rd
+[0:0] xlr_mem_wr				[0:0] mem_wr
+
+!xlr_gpp_if
+[31:0][31:0] host_regs			[31:0][31:0] host_regsi
+[31:0] host_regs_valid_pulse	[31:0] host_regs_valid
+[31:0][31:0] host_regs_data_out	[31:0][31:0] host_regso
+[31:0] host_regs_valid_out		[31:0] host_regso_valid
+
+!
+clk								clk
+rst_n							rst_n

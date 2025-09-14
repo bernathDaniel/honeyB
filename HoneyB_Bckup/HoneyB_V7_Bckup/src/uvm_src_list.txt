@@ -1,0 +1,49 @@
+###################################################
+#                   UVM SRC LIST                  #
+###################################################
+
+# Utilities
+../src/tb/utils/honeyb_pkg.sv
+
+# MEM Agent
+../src/tb/xlr_mem/sv/xlr_mem_pkg.sv
+../src/tb/xlr_mem/sv/xlr_mem_if.sv
+../src/tb/xlr_mem/sv/xlr_mem_config.sv
+../src/tb/xlr_mem/sv/xlr_mem_xlr_mem_tx.sv
+../src/tb/xlr_mem/sv/xlr_mem_sequencer.sv
+../src/tb/xlr_mem/sv/xlr_mem_driver.sv
+../src/tb/xlr_mem/sv/xlr_mem_frontdoor_driver.sv
+../src/tb/xlr_mem/sv/xlr_mem_model.sv
+../src/tb/xlr_mem/sv/xlr_mem_monitor.sv
+../src/tb/xlr_mem/sv/xlr_mem_coverage.sv
+../src/tb/xlr_mem/sv/xlr_mem_agent.sv
+../src/tb/xlr_mem/sv/xlr_mem_seq_lib.sv
+
+
+# GPP Agent
+../src/tb/xlr_gpp/sv/xlr_gpp_pkg.sv
+../src/tb/xlr_gpp/sv/xlr_gpp_if.sv
+../src/tb/xlr_gpp/sv/xlr_gpp_config.sv
+../src/tb/xlr_gpp/sv/xlr_gpp_xlr_gpp_tx.sv
+../src/tb/xlr_gpp/sv/xlr_gpp_sequencer.sv
+../src/tb/xlr_gpp/sv/xlr_gpp_driver.sv
+../src/tb/xlr_gpp/sv/xlr_gpp_monitor.sv
+../src/tb/xlr_gpp/sv/xlr_gpp_coverage.sv
+../src/tb/xlr_gpp/sv/xlr_gpp_agent.sv
+../src/tb/xlr_gpp/sv/xlr_gpp_seq_lib.sv
+
+
+
+# Top Env
+../src/tb/top/sv/top_config.sv
+../src/tb/top/sv/top_seq_lib.sv
+../src/tb/top/sv/port_converter.sv
+../src/tb/top/sv/reference.sv
+../src/tb/top/sv/xlr_scoreboard.sv
+../src/tb/top/sv/top_env.sv
+../src/tb/top/sv/top_pkg.sv
+
+
+# Top Test
+../src/tb/top_test/sv/top_test.sv
+../src/tb/top_test/sv/top_test_pkg.sv

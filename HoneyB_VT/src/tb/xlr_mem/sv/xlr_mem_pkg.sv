@@ -105,7 +105,7 @@ package xlr_mem_pkg;
 
     virtual task clk_wait_posedge();
       `uvm_error(get_type_name(),"clk_wait_posedge not implemented")
-    endtask : clk_wait_posedge
+    endtask
 
     virtual task clk_wait_negedge();
       `uvm_error(get_type_name(),"clk_wait_negedge not implemented")
