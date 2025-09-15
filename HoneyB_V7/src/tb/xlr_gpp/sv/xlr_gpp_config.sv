@@ -20,8 +20,10 @@ class xlr_gpp_config extends uvm_object;
   virtual xlr_gpp_if       vif;
                   
   uvm_active_passive_enum  is_active = UVM_ACTIVE;
-  bit                      coverage_enable;       
+  bit                      coverage_enable;
+  int                      cov_hit_thrshld;       
   bit                      checks_enable;
+  bit                      calcopy_enable;
 
   extern function new(string name = "");
 endclass : xlr_gpp_config 

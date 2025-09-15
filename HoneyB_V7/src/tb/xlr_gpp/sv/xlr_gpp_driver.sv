@@ -42,7 +42,8 @@ endfunction // Boilerplate
 
 task xlr_gpp_driver::run_phase(uvm_phase phase);
   int wait2start = 0;
-  `honeyb("GPP Driver", "run_phase initialized...")
+  `honeyb("GPP Driver", "  run_phase initialized...")
+    // Report
 
   // Boot Sequence
   //===============
@@ -53,7 +54,7 @@ task xlr_gpp_driver::run_phase(uvm_phase phase);
   forever begin
     seq_item_port.get_next_item(req);
 
-    `honeyb("GPP Driver", "New seq item received, driving...")
+    `honeyb("GPP Driver", "New seq. item received, driving...")
     phase.raise_objection(this);
 
     do_drive(); // Drive on posedge timing
@@ -90,29 +91,27 @@ task xlr_gpp_driver::do_drive(); // - OK - // - Final - //
       vif.host_regsi[csr_idx]       <= req.host_regsi[csr_idx];
       vif.host_regs_valid[csr_idx]  <= 1'b1;
     end
-    // No else - let the undriven maintain state (REALISTIC CPU BEHAVIOR, REDUCES UNNECESSARY CYCLES)
+      // No else - let the undriven maintain state (REALISTIC CPU BEHAVIOR, REDUCES UNNECESSARY CYCLES)
   end
     
 
-  if ((is_start_asserted(req.host_regsi[START_IDX_REG], req.host_regs_valid[START_IDX_REG]) == 1'b1) ||
-      (is_calcopy_asserted(req.host_regsi[START_IDX_REG], req.host_regs_valid[START_IDX_REG]) == 1'b1)) begin
-
+  if (is_start_asserted  (req.host_regsi[START_IDX_REG] , req.host_regs_valid[START_IDX_REG]) ||
+      is_calcopy_asserted(req.host_regsi[START_IDX_REG] , req.host_regs_valid[START_IDX_REG])
+  ) begin
     clk_posedge_wait(); // Hold START = 1 for 1 clk cycle                       
 
     vif.host_regsi      [START_IDX_REG]  <= '0; // de-assert
     vif.host_regs_valid [START_IDX_REG]  <= '0;
 
-    `honeyb("GPP Driver", "waiting for DONE signal...")
+    `honeyb("GPP Driver", "waiting for DONE status...")
+      // Report
     req.set_e_mode("start");
-    
-
     while(done_is_deasserted( vif.host_regso      [DONE_IDX_REG],     // Wait for DONE assertion + Sudden RST Handling
                               vif.host_regso_valid[DONE_IDX_REG]) &&  // Do this while:
                               vif.rst_n)                              clk_posedge_wait();
-
-    // Report
-    `honeyb("GPP Driver", "Received DONE signal, moving on...")
-  end 
+    `honeyb("GPP Driver", "  DONE status received, moving on!")
+      // Report
+  end
 endtask // Start Wiggling + Report
 
 //=========================================================

@@ -41,7 +41,8 @@ class xlr_mem_config extends uvm_object;
 
   // Do not register config class with the factory
   uvm_active_passive_enum  is_active = UVM_ACTIVE;
-  bit                      coverage_enable;       
+  bit                      coverage_enable;
+  int                      cov_hit_thrshld;        
   bit                      checks_enable;
 
 

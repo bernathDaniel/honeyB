@@ -60,7 +60,7 @@ endfunction : build_phase // Boilerplate
 
 
 task xlr_gpp_monitor::run_phase(uvm_phase phase);
-  //`honeyb("GPP MON", "run_phase initialized...")
+  `honeyb("GPP Monitor", "run_phase initialized...")
   m_trans_in  = xlr_gpp_tx::type_id::create("m_trans_in");
   m_trans_out = xlr_gpp_tx::type_id::create("m_trans_out");
   do_mon(); // User-Defined Handling
@@ -89,8 +89,8 @@ task xlr_gpp_monitor::do_mon(); // - OK - // - FINAL - //
         m_trans_in.host_regs_valid  = vif.host_regs_valid;
         m_trans_in.set_e_mode("rst_i"); // sampling & e_mode set
 
-        `honeyb("GPP MON", "rst_n detected, INPUT transactions are reset")
-        m_trans_in.print();
+        `honeyb("GPP Monitor", "RESET(STIMULUS) detected, Broadcasting...")
+          m_trans_in.print();
         analysis_port_in.write(m_trans_in);
       end
       rst_n_posedge_wait();
@@ -99,13 +99,19 @@ task xlr_gpp_monitor::do_mon(); // - OK - // - FINAL - //
     forever begin // - OK - // START_IDX_REG Sampler
       clk_posedge_wait();
                           #RACE_CTRL;
-      if(is_start_asserted(vif.host_regsi[START_IDX_REG], vif.host_regs_valid[START_IDX_REG])) begin
+      if (is_start_asserted  (vif.host_regsi[START_IDX_REG] , vif.host_regs_valid[START_IDX_REG]) ||
+          is_calcopy_asserted(vif.host_regsi[START_IDX_REG] , vif.host_regs_valid[START_IDX_REG])
+      ) begin
         
         m_trans_in.host_regsi     [START_IDX_REG] = vif.host_regsi     [START_IDX_REG];
         m_trans_in.host_regs_valid[START_IDX_REG] = vif.host_regs_valid[START_IDX_REG];
         m_trans_in.set_e_mode("start");
         
-        `honeyb("GPP MON", "Detected Start Inst.,:")
+        if (vif.host_regsi[START_IDX_REG] == 32'h2) begin
+          `honeyb("GPP Monitor", "Start(CALCOPY) ctrl detected, Broadcasting...")
+          m_trans_in.set_f_mode(CALCOPY);
+        end else `honeyb("GPP Monitor", "Start(MATMUL) ctrl detected, Broadcasting...")
+
         m_trans_in.print(); // Report
         analysis_port_in.write(m_trans_in);
       end
@@ -126,9 +132,9 @@ task xlr_gpp_monitor::do_mon(); // - OK - // - FINAL - //
         m_trans_out.host_regso        = vif.host_regso;
         m_trans_out.host_regso_valid  = vif.host_regso_valid;
         m_trans_out.set_e_mode("rst_o"); // sampling & e_mode set
-        m_trans_out.print();
-        `honeyb("GPP MON", "rst_n detected, OUTPUT transactions are reset")
-        #RACE_CTRL;
+                              #RACE_CTRL;
+        `honeyb("GPP Monitor", "RESET(DUT RSP) detected, Broadcasting...")
+          m_trans_out.print();
         analysis_port_out.write(m_trans_out);
       end
       rst_n_posedge_wait();
@@ -150,8 +156,8 @@ task xlr_gpp_monitor::do_mon(); // - OK - // - FINAL - //
         m_trans_out.host_regso_valid[BUSY_IDX_REG] = vif.host_regso_valid[BUSY_IDX_REG];
         m_trans_out.set_e_mode("busy");
 
-        `honeyb("GPP MON", "Detected BUSY Inst. : Broadcasting...")
-        m_trans_out.print();// Report
+        `honeyb("GPP Monitor", "BUSY status detected, Broadcasting...")
+          m_trans_out.print();// Report
 
         analysis_port_out.write(m_trans_out);
       end
@@ -171,8 +177,8 @@ task xlr_gpp_monitor::do_mon(); // - OK - // - FINAL - //
         m_trans_out.host_regso_valid[DONE_IDX_REG] = vif.host_regso_valid[DONE_IDX_REG];
         m_trans_out.set_e_mode("done"); // sampling & e_mode set
 
-        `honeyb("GPP MON", "Detected DONE Inst. : Broadcasting...")
-        m_trans_out.print(); // Report
+        `honeyb("GPP Monitor", "DONE status detected, Broadcasting...")
+          m_trans_out.print(); // Report
         analysis_port_out.write(m_trans_out);
       end
     end
@@ -185,21 +191,21 @@ endtask : do_mon
   // Clock Methods
   // =============
 
-  task xlr_gpp_monitor::clk_posedge_wait(); @(posedge vif.clk); endtask
-  task xlr_gpp_monitor::clk_negedge_wait(); @(negedge vif.clk); endtask
+    task xlr_gpp_monitor::clk_posedge_wait(); @(posedge vif.clk); endtask
+    task xlr_gpp_monitor::clk_negedge_wait(); @(negedge vif.clk); endtask
 
   // Reset Methods
   // =============
 
-  function logic xlr_gpp_monitor::get_rst_n(); return vif.rst_n; endfunction
+    function logic xlr_gpp_monitor::get_rst_n(); return vif.rst_n; endfunction
 
-  task xlr_gpp_monitor::pin_wig_rst();
-    vif.host_regsi <= '0;
-    vif.host_regs_valid <= '0;
-  endtask
+    task xlr_gpp_monitor::pin_wig_rst();
+      vif.host_regsi      <= '0;
+      vif.host_regs_valid <= '0;
+    endtask
 
-  task xlr_gpp_monitor::rst_n_negedge_wait(); @(negedge vif.rst_n); endtask
-  task xlr_gpp_monitor::rst_n_posedge_wait(); @(posedge vif.rst_n); endtask
+    task xlr_gpp_monitor::rst_n_negedge_wait(); @(negedge vif.rst_n); endtask
+    task xlr_gpp_monitor::rst_n_posedge_wait(); @(posedge vif.rst_n); endtask
 
 `endif // XLR_GPP_MONITOR_SV
 

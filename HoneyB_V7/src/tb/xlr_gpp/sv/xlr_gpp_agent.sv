@@ -48,14 +48,13 @@ function void xlr_gpp_agent::build_phase(uvm_phase phase);
   if (!uvm_config_db #(xlr_gpp_config)::get(this, "", "config", m_config))
     `uvm_error("", "xlr_gpp config not found")
 
-  m_monitor     = xlr_gpp_monitor    ::type_id::create("m_monitor"  , this);
+  m_monitor     = xlr_gpp_monitor::type_id::create("m_monitor"  , this);
 
   if (get_is_active() == UVM_ACTIVE)
   begin
-    m_driver    = xlr_gpp_driver     ::type_id::create("m_driver"   , this);
+    m_driver    = xlr_gpp_driver::type_id::create("m_driver"   , this);
     m_sequencer = xlr_gpp_sequencer_t::type_id::create("m_sequencer", this);
   end
-  // Setting the Calcopy CFG Up :
 endfunction : build_phase
 
 

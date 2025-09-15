@@ -54,7 +54,7 @@ endclass // Boilerplate + Helpers
 function xlr_mem_monitor::new(string name, uvm_component parent);
 	super.new(name, parent);
 	analysis_port_in 		= new("analysis_port_in",  this);
-	analysis_port_out 	= new("analysis_port_out", this);
+	analysis_port_out 		= new("analysis_port_out", this);
 endfunction // Boilerplate
 
 
@@ -63,7 +63,7 @@ endfunction // Boilerplate
 
 
 task xlr_mem_monitor::run_phase(uvm_phase phase);
-	//`honeyb("MEM MON", "run_phase initialized...")
+	`honeyb("MEM Monitor", "run_phase initialized...")
 	m_trans_in 	= xlr_mem_tx::type_id::create("m_trans_in"	);
 	m_trans_out = xlr_mem_tx::type_id::create("m_trans_out"	);
 	do_mon();
@@ -86,9 +86,9 @@ task xlr_mem_monitor::do_mon();
 																					#RACE_CTRL;
 				m_trans_in.mem_rdata  = m_xlr_mem_if.get_rdata_all();
 				m_trans_in.set_e_mode("rst_i"); // "INPUT RESET" Event
-				// Report
-				//`honeyb("MEM MON", "rst_n detected, INPUT transactions are reset")
-				//m_trans_in.print();
+
+				`honeyb("MEM Monitor", "RESET(STIMULUS) detected, Broadcasting...")
+				  m_trans_in.print();
 				analysis_port_in.write(m_trans_in);
 			end
 			m_xlr_mem_if.rst_n_posedge_wait();
@@ -114,8 +114,8 @@ task xlr_mem_monitor::do_mon();
 				end
     	end // Driver's RSP sampling
 
-			//`honeyb("MEM MON", "Read Requested...")
-			//m_trans_in.print(); // Report
+			`honeyb("MEM Monitor", "READ detected, Broadcasting...")
+			  m_trans_in.print(); // Report
 
 			analysis_port_in.write(m_trans_in);
 		end
@@ -134,8 +134,9 @@ task xlr_mem_monitor::do_mon();
 																						#RACE_CTRL;
 				get_all_trans_out(); // all output = 0 
 				m_trans_out.set_e_mode("rst_o"); // "OUTPUT_RESET" Event
-				//`honeyb("MEM MON", "rst_n detected, OUTPUT transactions are reset")
-				#RACE_CTRL;
+				                                    #RACE_CTRL;
+				`honeyb("MEM Monitor", "RESET(DUT RSP) detected, Broadcasting...")
+          m_trans_out.print();
 				analysis_port_out.write(m_trans_out);
 			end
 			m_xlr_mem_if.rst_n_posedge_wait();
@@ -154,11 +155,9 @@ task xlr_mem_monitor::do_mon();
 			m_trans_out.set_e_mode("wr");
 
 			m_xlr_mem_if.clk_posedge_wait();
-			//																	#RACE_CTRL;
 
-			//`honeyb("MEM MON", "Write Requested...")
-			//m_trans_out.print(); // Report
-
+			`honeyb("MEM Monitor", "WRITE detected, Broadcasting...")
+			  m_trans_out.print(); // Report
 			analysis_port_out.write(m_trans_out);
 		end
 	join_none

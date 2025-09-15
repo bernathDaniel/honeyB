@@ -3,10 +3,10 @@
 // File Name: top_seq_lib.sv
 //=============================================================================
 // Description: Sequence for top
-// IMPORANT   : Right now the child sequences
-//              are within a fork...join however
-//              this might be changed to fork...join_none
-//              In the case we might want multiple read/write operations.
+  // IMPORANT   : Right now the child sequences
+  //              are within a fork...join however
+  //              this might be changed to fork...join_none
+  //              In the case we might want multiple read/write operations.
 //=============================================================================
 
 `ifndef TOP_SEQ_LIB_SV
@@ -45,11 +45,12 @@ endclass : top_default_seq
 
 function top_default_seq::new(string name = "");
   super.new(name);
-endfunction : new
+endfunction // Boilerplate
 
 
 task top_default_seq::body();
-  `honeyb("TOP SEQ", "New sequence starting...")
+  $display();
+  `honeyb("TOP Sequence", PD," New sequence starting...")
 
   repeat (m_seq_count)
   begin
@@ -64,7 +65,7 @@ task top_default_seq::body();
           `uvm_error("", "Failed to randomize sequence")
         seq.set_starting_phase( get_starting_phase() );
         seq.start(m_xlr_mem_agent.m_sequencer, this);        
-      end else `honeyb("TOP SEQ", "MEM SEQ UNINITIALIZED ", "STATUS = OK")
+      end else `honeyb("TOP Sequence", "MEM Sequencer UNINITIALIZED, ", "STATUS = OK")
 
       if (m_xlr_gpp_agent.m_config.is_active == UVM_ACTIVE)
       begin
@@ -78,8 +79,7 @@ task top_default_seq::body();
       end
     join
   end
-
-  `honeyb("TOP SEQ", "Sequence completed...")
+  `honeyb("TOP Sequence", PD, " Sequence completed!\n")
 endtask : body
 
 

@@ -33,12 +33,12 @@ class xlr_scoreboard extends uvm_scoreboard;
 
   // TLM ports to receive transactions from both agents
   // xlr_mem agent ports - DUT | REF
-  uvm_analysis_imp_mem_ref #(xlr_mem_tx, xlr_scoreboard) mem_ref_export;
-  uvm_analysis_imp_mem_dut #(xlr_mem_tx, xlr_scoreboard) mem_dut_export;
+  uvm_analysis_imp_mem_ref#(xlr_mem_tx, xlr_scoreboard) mem_ref_export;
+  uvm_analysis_imp_mem_dut#(xlr_mem_tx, xlr_scoreboard) mem_dut_export;
 
   // xlr_gpp agent ports - DUT | REF
-  uvm_analysis_imp_gpp_ref #(xlr_gpp_tx, xlr_scoreboard) gpp_ref_export;
-  uvm_analysis_imp_gpp_dut #(xlr_gpp_tx, xlr_scoreboard) gpp_dut_export;
+  uvm_analysis_imp_gpp_ref#(xlr_gpp_tx, xlr_scoreboard) gpp_ref_export;
+  uvm_analysis_imp_gpp_dut#(xlr_gpp_tx, xlr_scoreboard) gpp_dut_export;
 
   // Separate queues for each agent and type, "$" = flexible sizing
   xlr_mem_tx mem_ref_queue[$];
@@ -66,13 +66,10 @@ class xlr_scoreboard extends uvm_scoreboard;
   extern virtual  function void report_phase  (uvm_phase phase);
 endclass : xlr_scoreboard
 
-// Constructor
 function xlr_scoreboard::new(string name, uvm_component parent);
   super.new(name, parent);
-endfunction : new
+endfunction //Boilerplate
 
-
-// Build Phase
 function void xlr_scoreboard::build_phase(uvm_phase phase);
   super.build_phase(phase);
   mem_ref_export = new("mem_ref_export", this);
@@ -102,8 +99,8 @@ function void xlr_scoreboard::write_mem_ref(xlr_mem_tx tx);
   // Queue it up:
   mem_ref_queue.push_back(stored_tx); // End-Of-Queue Insertion
 
-  `honeyb("MEM REF SCRBD", "Write Request Received! ")
-  stored_tx.print(); // Report
+  `honeyb("Scoreboard", "WRITE Result Received! ")
+    //stored_tx.print(); // Report
 endfunction : write_mem_ref
 
 // ===============================================================
@@ -124,16 +121,16 @@ function void xlr_scoreboard::write_gpp_ref(xlr_gpp_tx tx);
   if (busy_is_asserted( stored_tx.host_regso      [BUSY_IDX_REG],
                         stored_tx.host_regso_valid[BUSY_IDX_REG]))
   begin
-    `honeyb("GPP REF SCRBD", "Received BUSY signal...")
-    stored_tx.print();
+    `honeyb("Scoreboard", "BUSY status Received! ")
+      //stored_tx.print();
   end // Report
 
   // Log Done Signal
   if (done_is_asserted( stored_tx.host_regso      [DONE_IDX_REG],
                         stored_tx.host_regso_valid[DONE_IDX_REG]))
   begin
-    `honeyb("GPP REF SCRBD", "Received DONE signal...")
-    stored_tx.print();
+    `honeyb("Scoreboard", "DONE status Received! ")
+      //stored_tx.print();
   end // Report
 endfunction : write_gpp_ref
 
@@ -151,9 +148,9 @@ function void xlr_scoreboard::write_mem_dut(xlr_mem_tx tx);
   // Queue it up:
   mem_dut_queue.push_back(stored_tx); // End-Of-Queue Insertion
 
-  // Report
-  `honeyb("MEM DUT SCRBD", "Write Request Received! ")
-  stored_tx.print();  
+  
+  `honeyb("Scoreboard", "WRITE Result | Received! ")
+    //stored_tx.print(); // Report
 
   // COMPARISON [MEM]:
   // -------------------------------------------------------
@@ -179,16 +176,16 @@ function void xlr_scoreboard::write_gpp_dut(xlr_gpp_tx tx);
   if (busy_is_asserted( stored_tx.host_regso      [BUSY_IDX_REG],
                         stored_tx.host_regso_valid[BUSY_IDX_REG]))
   begin
-    `honeyb("GPP DUT SCRBD", "Received BUSY signal...")
-    stored_tx.print();
+    `honeyb("Scoreboard", "BUSY status  | Received! ")
+      //stored_tx.print();
   end // Report
 
   // Log Done Signal
   if (done_is_asserted( stored_tx.host_regso      [DONE_IDX_REG],
                         stored_tx.host_regso_valid[DONE_IDX_REG]))
   begin
-    `honeyb("GPP DUT SCRBD", "Received DONE signal...")
-    stored_tx.print();
+    `honeyb("Scoreboard", "DONE status  | Received! ")
+      //stored_tx.print();
   end // Report
 
   // COMPARISON [GPP]:
@@ -216,7 +213,7 @@ function void xlr_scoreboard::compare_mem_transactions();
   ref_tx = xlr_mem_tx::type_id::create("ref_tx");
   dut_tx = xlr_mem_tx::type_id::create("dut_tx");
 // -------------------------------------------------------
-  `honeyb("MEM COMPARE", "Comparing...", $sformatf("Queue Sizes : MEM_REF = %0d MEM_DUT = %0d", mem_ref_queue.size(), mem_dut_queue.size()))
+  `honeyb("Scoreboard", "Comparing... | ", $sformatf("Queue Sizes : MEM_REF = %0d MEM_DUT = %0d", mem_ref_queue.size(), mem_dut_queue.size()))
   
   // Check if both queues have transactions
   if (mem_ref_queue.size() > 0 && mem_dut_queue.size() > 0) begin
@@ -233,24 +230,26 @@ function void xlr_scoreboard::compare_mem_transactions();
       // Event-specific success reporting
       // -----------------------------------------------------
       // WR         Report:
-      if      (ref_tx.e_mode == "wr")    `honeyb("MEM COMPARE", "MEM WR TXs match!")
+      if      (ref_tx.e_mode == "wr")    `honeyb("Scoreboard", "COMPUTATION  | MATCHED SUCCESSFULY!")
       // RST_O      Report:
-      else if (ref_tx.e_mode == "rst_o") `honeyb("MEM COMPARE", "MEM RST_O TX match!")
+      else if (ref_tx.e_mode == "rst_o") `honeyb("Scoreboard", "DUT RESET OP | MATCHED SUCCESSFULY!")
       // Unexpected Report:
-      else    `uvm_warning("MEM COMPARE", $sformatf("Unexpected e_mode '%s' in MEM comparison", ref_tx.e_mode))
+      else    `uvm_warning("Scoreboard", $sformatf("Unexpected e_mode '%s' in MEM comparison", ref_tx.e_mode))
       // Incr. match count:
       mem_match_count++;
+      $display(); // CLI
     end else begin
       // Event-specific failure reporting
       // --------------------------------------------------
       // WR         Report:
-      if      (ref_tx.e_mode == "wr")    `uvm_warning("MEM COMPARE", "MEM WR TXs mismatch!")
+      if      (ref_tx.e_mode == "wr")    `uvm_warning("Scoreboard", "COMPUTATION  | MISMATCH!")
       // RST_O      Report:
-      else if (ref_tx.e_mode == "rst_o") `uvm_warning("MEM COMPARE", "MEM RST_O TX mismatch!")
+      else if (ref_tx.e_mode == "rst_o") `uvm_warning("Scoreboard", "DUT RESET OP | MISMATCH!")
       // Unexpected Report:
-      else    `uvm_warning("MEM COMPARE", $sformatf("Unexpected e_mode '%s' in MEM comparison", ref_tx.e_mode))
+      else    `uvm_warning("Scoreboard", $sformatf("Unexpected e_mode '%s' in MEM comparison", ref_tx.e_mode))
       // Incr. match count:
       mem_mismatch_count++;
+      $display(); // CLI
       // Prnt DUT Mismatch:
       dut_tx.print();
       // Prnt REF Mismatch:
@@ -273,7 +272,7 @@ function void xlr_scoreboard::compare_gpp_transactions();
 // -------------------------------------------------------
   
 
-  `honeyb("GPP COMPARE", "Comparing...", $sformatf("Queue Sizes : GPP_REF = %0d GPP_DUT = %0d", gpp_ref_queue.size(), gpp_dut_queue.size()))
+  `honeyb("Scoreboard", "Comparing... | ", $sformatf("Queue Sizes : GPP_REF = %0d GPP_DUT = %0d", gpp_ref_queue.size(), gpp_dut_queue.size()))
   // Check if both queues have transactions
   if (gpp_ref_queue.size() > 0 && gpp_dut_queue.size() > 0) begin
   
@@ -289,28 +288,30 @@ function void xlr_scoreboard::compare_gpp_transactions();
       // Event-specific success reporting
       // -----------------------------------------------------
       // RST_O      Report:
-      if      (ref_tx.e_mode == "rst_o") `honeyb("GPP COMPARE", "GPP RST_O TX match!")
+      if      (ref_tx.e_mode == "rst_o") `honeyb("Scoreboard", "RESET Status | MATCHED SUCCESSFULY!")
       // BUSY       Report:
-      else if (ref_tx.e_mode == "busy" ) `honeyb("GPP COMPARE", "GPP BUSY  TX match!")
+      else if (ref_tx.e_mode == "busy" ) `honeyb("Scoreboard", "BUSY Status  | MATCHED SUCCESSFULY!")
       // DONE       Report:
-      else if (ref_tx.e_mode == "done" ) `honeyb("GPP COMPARE", "GPP DONE  TX match!")
+      else if (ref_tx.e_mode == "done" ) `honeyb("Scoreboard", "DONE Status  | MATCHED SUCCESSFULY!")
       // Unexpected Report:
-      else    `uvm_warning("GPP COMPARE", $sformatf("Unexpected e_mode '%s' in GPP comparison", ref_tx.e_mode))
+      else    `uvm_warning("Scoreboard", $sformatf("Unexpected e_mode '%s' in GPP comparison", ref_tx.e_mode))
       // Incr. match count:
       gpp_match_count++;
+      $display(); // CLI
     end else begin
       // Event-specific failure reporting
       // --------------------------------------------------
       // RST_O      Report:
-      if      (ref_tx.e_mode == "rst_o") `uvm_warning("GPP COMPARE", "GPP RST_O TX mismatch!")
+      if      (ref_tx.e_mode == "rst_o") `uvm_warning("Scoreboard", "RESET Status | MISMATCH!")
       // BUSY       Report:
-      else if (ref_tx.e_mode == "busy" ) `uvm_warning("GPP COMPARE", "GPP BUSY  TX mismatch!")
+      else if (ref_tx.e_mode == "busy" ) `uvm_warning("Scoreboard", "BUSY Status  | MISMATCH!")
       // DONE       Report:
-      else if (ref_tx.e_mode == "done" ) `uvm_warning("GPP COMPARE", "GPP DONE  TX mismatch!")
+      else if (ref_tx.e_mode == "done" ) `uvm_warning("Scoreboard", "DONE Status  | MISMATCH!")
       // Unexpected Report:
-      else    `uvm_warning("GPP COMPARE", $sformatf("Unexpected e_mode '%s' in GPP comparison", ref_tx.e_mode))
+      else    `uvm_warning("Scoreboard", $sformatf("Unexpected e_mode '%s' in GPP comparison", ref_tx.e_mode))
       // Incr. match count:
       gpp_mismatch_count++;
+      $display(); // CLI
       // Prnt DUT Mismatch:
       dut_tx.print();
       // Prnt REF Mismatch:
@@ -320,19 +321,21 @@ function void xlr_scoreboard::compare_gpp_transactions();
 endfunction : compare_gpp_transactions
 
 
-//*******************************************//
-//                Report Phase               //
-// ---------------------------------------   //
-//               Display Results             //
-//*******************************************//
+// |===================================================================|
+// |/             ---------------------------------------             \|
+// ||             |             Report Phase            |             ||
+// ||             ---------------------------------------             ||
+// ||             |            Display Results          |             ||
+// |\             ---------------------------------------             /|
+// |===================================================================|
 
 function void xlr_scoreboard::report_phase(uvm_phase phase);
-  `honeyb("", "Scoreboard Report:")
-  `honeyb("", "--------------------------")
-  `honeyb("", $sformatf("MEM Matches    : %0d", mem_match_count))
-  `honeyb("", $sformatf("MEM Mismatches : %0d", mem_mismatch_count))
-  `honeyb("", $sformatf("GPP Matches    : %0d", gpp_match_count))
-  `honeyb("", $sformatf("GPP Mismatches : %0d", gpp_mismatch_count))
+  `honeyb("Scoreboard", "Final Report:")
+  `honeyb("Scoreboard", "--------------------")
+  `honeyb("Scoreboard", $sformatf("MEM Matches    : %0d", mem_match_count))
+  `honeyb("Scoreboard", $sformatf("MEM Mismatches : %0d", mem_mismatch_count))
+  `honeyb("Scoreboard", $sformatf("GPP Matches    : %0d", gpp_match_count))
+  `honeyb("Scoreboard", $sformatf("GPP Mismatches : %0d", gpp_mismatch_count))
 
   // Check for pending transactions
   if (mem_ref_queue.size() > 0) begin
@@ -358,9 +361,9 @@ endfunction : report_phase
 `endif // TOP_XLR_SCOREBOARD_SV
 
 
-// %%%%%%%%%%%%%%%%%%%%%%%%%
-// %         EXTRAS        %
-// %%%%%%%%%%%%%%%%%%%%%%%%%
+//========================
+//         EXTRAS        
+//========================
   //
   // Event Case Handling + Comparison - Based on e_mode
   // //-----------------------------------------------------

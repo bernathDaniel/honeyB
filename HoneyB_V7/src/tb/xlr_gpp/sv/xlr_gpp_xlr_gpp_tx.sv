@@ -1,23 +1,23 @@
 //=============================================================================
-// Project    : HoneyB V4
+// Project    : HoneyB V7
 // File Name  : xlr_gpp_seq_item.sv
 //=============================================================================
 // Description: Sequence item for xlr_gpp_sequencer
-//
-//              This tx class contains the following special methods:
-//              print(), copy(), compare(), record(), unpack(), pack()
-//
-//              Special *context* feature "e_mode select" :
-//              The **Event** mode select allows you to
-//              choose context of triggered event for improved
-//              communication across the ecosystem:
-//
-//              how to use e_mode select :
-//                             tx.set_e_mode("<chosen_e_mode>");
-//                             tx.print(); (example for using print method)
-//
-//              possible e_modes :
-//                            | def || rst_i || rst_o || start || busy || done |
+  //
+  //              This tx class contains the following special methods:
+  //              print(), copy(), compare(), record(), unpack(), pack()
+  //
+  //              Special *context* feature "e_mode select" :
+  //              The **Event** mode select allows you to
+  //              choose context of triggered event for improved
+  //              communication across the ecosystem:
+  //
+  //              how to use e_mode select :
+  //                             tx.set_e_mode("<chosen_e_mode>");
+  //                             tx.print(); (example for using print method)
+  //
+  //              possible e_modes :
+  //                            | def || rst_i || rst_o || start || busy || done |
 //=============================================================================
 
 `ifndef XLR_GPP_SEQ_ITEM_SV
@@ -32,6 +32,8 @@ class xlr_gpp_tx extends uvm_sequence_item;
   `uvm_object_utils(xlr_gpp_tx)
 
   string e_mode = "def"; // default e_mode is def (can be def / rst_i / rst_o / start / busy / done)
+
+  func_mode f_mode = MATMUL; // default f_mode is MATMUL (can be CALCOPY) 
 
   // Transaction variables
   rand logic  [31:0][31:0] host_regsi;
@@ -54,19 +56,10 @@ class xlr_gpp_tx extends uvm_sequence_item;
     host_regs_valid[START_IDX_REG] == 1'b1;
   }
 
-  /*constraint c_gpp_valid_null { // this is unnecessary
-    host_regs_valid[31:1] inside 31'd0;
-  }
-  constraint c_gpp_valid_data_dist {
-    host_regs_valid[START_IDX_REG] dist {1'b0 := 1, 1'b1 := 5};
-    host_regsi[START_IDX_REG][0] dist {1'b0 := 1, 1'b1 := 5};
-    }
-  */
-
-
   extern function new(string name = "");
 
   extern function void    set_e_mode(string s);
+  extern function void    set_f_mode(func_mode f);
   extern function void    do_copy   (uvm_object rhs);
   extern function bit     do_compare(uvm_object rhs, uvm_comparer comparer);
   extern function void    do_print  (uvm_printer printer);
@@ -94,9 +87,15 @@ function void xlr_gpp_tx::set_e_mode(string s); // can be -> def / rst_i / rst_o
       $sformatf("set_e_mode: invalid e_mode '%s'! [ allowed: def / rst_i / rst_o / start / busy / done ]", s))
       return;
     end
-  e_mode = s;
   // `honeyb("GPP TX", $sformatf("Setting e_mode to: %s...", s)) // Optional || Comment out to reduce log capacity
+  e_mode = s;
 endfunction : set_e_mode
+
+
+function void xlr_gpp_tx::set_f_mode(func_mode f); // can be -> MATMUL / CALCOPY
+  // `honeyb("", $sformatf("Setting f_mode to: MEM[%0d]", f_mode))
+  f_mode = f;
+endfunction
 
 
 function void xlr_gpp_tx::do_copy(uvm_object rhs);
@@ -105,6 +104,7 @@ function void xlr_gpp_tx::do_copy(uvm_object rhs);
     `uvm_fatal(get_type_name(), "Cast of rhs object failed")
   super.do_copy(rhs);
   e_mode = rhs_.e_mode;
+  f_mode = rhs_.f_mode;
   // Event-specific field copying
   if (e_mode == "rst_i") begin                      // inputs only
     host_regsi                      = rhs_.host_regsi;
@@ -216,11 +216,11 @@ function string xlr_gpp_tx::convert2string(); // print all
   string s;
   $sformat(s, "%s\n", super.convert2string());
   $sformat(s, { "%s", "[EVENT](DEFAULT):\n",
-    "\thost_regsi       = 'h%0h  'd%0d\n", 
-    "\thost_regs_valid  = 'h%0h  'd%0d\n", 
-    "\thost_regso       = 'h%0h  'd%0d\n", 
-    "\thost_regso_valid = 'h%0h  'd%0d\n"}, s,
-    host_regsi, host_regsi, host_regs_valid, host_regs_valid, host_regso, host_regso, host_regso_valid, host_regso_valid);
+    "\thost_regsi       = 'h%0h\n", 
+    "\thost_regs_valid  = 'h%0h\n", 
+    "\thost_regso       = 'h%0h\n", 
+    "\thost_regso_valid = 'h%0h\n\n"}, s,
+    host_regsi, host_regs_valid, host_regso, host_regso_valid);
   return s;
 endfunction : convert2string
 
@@ -229,9 +229,9 @@ function string xlr_gpp_tx::convert2string_rst_i(); // print inputs
   string s;
   $sformat(s, "%s\n", super.convert2string());
   $sformat(s, { "%s", "[EVENT](INPUT_RESET):\n",
-    "\thost_regsi       = 'h%0h  'd%0d\n", 
-    "\thost_regs_valid  = 'h%0h  'd%0d\n"}, s,
-    host_regsi, host_regsi, host_regs_valid, host_regs_valid);
+    "\thost_regsi       = 'h%0h\n", 
+    "\thost_regs_valid  = 'h%0h\n\n"}, s,
+    host_regsi, host_regs_valid);
   return s;
 endfunction : convert2string_rst_i
 
@@ -240,9 +240,9 @@ function string xlr_gpp_tx::convert2string_rst_o(); // print outputs
   string s;
   $sformat(s, "%s\n", super.convert2string());
   $sformat(s, { "%s", "[EVENT](OUTPUT_RESET):\n",
-    "\thost_regso       = 'h%0h  'd%0d\n", 
-    "\thost_regso_valid = 'h%0h  'd%0d\n"}, s,
-    host_regso, host_regso, host_regso_valid, host_regso_valid);
+    "\thost_regso       = 'h%0h\n", 
+    "\thost_regso_valid = 'h%0h\n\n"}, s,
+    host_regso, host_regso_valid);
   return s;
 endfunction : convert2string_rst_o
 
@@ -251,9 +251,9 @@ function string xlr_gpp_tx::convert2string_start(); // print start signal
   string s;
   $sformat(s, "%s\n", super.convert2string());
   $sformat(s, { "%s", "[EVENT](START):\n",
-    "\thost_regsi     [START_IDX_REG]  = 'h%0h  'd%0d\n", 
-    "\thost_regs_valid[START_IDX_REG]  = 'h%0h  'd%0d\n"}, s,
-    host_regsi[START_IDX_REG], host_regsi[START_IDX_REG], host_regs_valid[START_IDX_REG], host_regs_valid[START_IDX_REG]);
+    "\thost_regsi     [START_IDX_REG]  = 'h%0h\n", 
+    "\thost_regs_valid[START_IDX_REG]  = 'h%0h\n\n"}, s,
+    host_regsi[START_IDX_REG], host_regs_valid[START_IDX_REG]);
   return s;
 endfunction : convert2string_start
 
@@ -262,9 +262,9 @@ function string xlr_gpp_tx::convert2string_busy(); // print busy signal
   string s;
   $sformat(s, "%s\n", super.convert2string());
   $sformat(s, { "%s", "[EVENT](BUSY):\n",
-    "\thost_regso      [BUSY_IDX_REG] = 'h%0h  'd%0d\n", 
-    "\thost_regso_valid[BUSY_IDX_REG] = 'h%0h  'd%0d\n"}, s,
-    host_regso[BUSY_IDX_REG], host_regso[BUSY_IDX_REG], host_regso_valid[BUSY_IDX_REG], host_regso_valid[BUSY_IDX_REG]);
+    "\thost_regso      [BUSY_IDX_REG] = 'h%0h\n", 
+    "\thost_regso_valid[BUSY_IDX_REG] = 'h%0h\n\n"}, s,
+    host_regso[BUSY_IDX_REG], host_regso_valid[BUSY_IDX_REG]);
   return s;
 endfunction : convert2string_busy
 
@@ -273,10 +273,27 @@ function string xlr_gpp_tx::convert2string_done(); // print done signal
   string s;
   $sformat(s, "%s\n", super.convert2string());
   $sformat(s, { "%s", "[EVENT](DONE):\n",
-    "\thost_regso      [DONE_IDX_REG] = 'h%0h  'd%0d\n", 
-    "\thost_regso_valid[DONE_IDX_REG] = 'h%0h  'd%0d\n"}, s,
-    host_regso[DONE_IDX_REG], host_regso[DONE_IDX_REG], host_regso_valid[DONE_IDX_REG], host_regso_valid[DONE_IDX_REG]);
+    "\thost_regso      [DONE_IDX_REG] = 'h%0h\n", 
+    "\thost_regso_valid[DONE_IDX_REG] = 'h%0h\n\n"}, s,
+    host_regso[DONE_IDX_REG], host_regso_valid[DONE_IDX_REG]);
   return s;
 endfunction : convert2string_done
 
 `endif // XLR_GPP_SEQ_ITEM_SV
+
+
+//===============
+//    EXTRAS
+//===============
+  /*
+
+  constraint c_gpp_valid_null { // this is unnecessary
+    host_regs_valid[31:1] inside 31'd0;
+  }
+  
+  constraint c_gpp_valid_data_dist {
+    host_regs_valid[START_IDX_REG] dist {1'b0 := 1, 1'b1 := 5};
+    host_regsi[START_IDX_REG][0] dist {1'b0 := 1, 1'b1 := 5};
+  }
+
+  */

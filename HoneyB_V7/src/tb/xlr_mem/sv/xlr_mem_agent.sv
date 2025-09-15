@@ -62,18 +62,15 @@ function void xlr_mem_agent::build_phase(uvm_phase phase);
 		m_driver   		= xlr_mem_driver::type_id::create("m_driver", this);
 
 		if (m_config.mem_is_used == 1'b0) begin
-		//	m_driver   	= xlr_mem_driver::type_id::create("m_driver", this);
 			m_sequencer = xlr_mem_sequencer_t::type_id::create("m_sequencer", this); // if 0 -> Build Sequ'r
 		end else begin
-		//	m_driver		= xlr_mem_frontdoor_driver::type_id::create("m_driver", this);
 			m_model 		= xlr_mem_model::type_id::create("m_model", this); // if 1 -> Build mem model
 			uvm_config_db #(xlr_mem_config)::set(this, "m_model", "config", m_config);
 		end
 	end
 
-	// defined in Top_test.sv || if m_config.iface_string = "xlr_mem_if_2_8"
 	m_xlr_mem_if = xlr_mem_if_base::type_id::create(m_config.iface_string, this);
-
+	  // defined in Top_test.sv || if m_config.iface_string = "xlr_mem_if_2_8"
 endfunction : build_phase
 
 
@@ -87,13 +84,13 @@ function void xlr_mem_agent::connect_phase(uvm_phase phase);
 		else begin
 								if (m_model == null) 
 									`uvm_fatal("CONFIG", "mem_is_used=1 but m_model not created")
-																																		//===============================================================
-															if (!$cast(fd, m_driver))							//										THIS IS STEP #2 - THE IMPORTANT ONE
-  															`uvm_fatal("FACTORY", "Override failed: m_driver is not xlr_mem_frontdoor_driver");
-															fd.model_bt.connect(m_model.bt_imp);  // safe: fd is the subclass // If 1 -> Connect mem model & Driver
-																																		//===============================================================
-																																		//
-															fd.m_xlr_mem_if = m_xlr_mem_if; 			// Need to connect the frontdoor_driver as well.
+                                                            //===============================================================
+                      if (!$cast(fd, m_driver))							//										THIS IS STEP #2 - THE IMPORTANT ONE
+                        `uvm_fatal("FACTORY", "Override failed: m_driver is not xlr_mem_frontdoor_driver");
+                      fd.model_bt.connect(m_model.bt_imp);  // safe: fd is the subclass // If 1 -> Connect mem model & Driver
+                                                            //===============================================================
+                                                            //
+                      fd.m_xlr_mem_if = m_xlr_mem_if; 			// Need to connect the frontdoor_driver as well.
 
 		end
 	end

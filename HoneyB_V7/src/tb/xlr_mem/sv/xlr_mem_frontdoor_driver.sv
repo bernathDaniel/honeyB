@@ -54,7 +54,7 @@ endfunction // Boilerplate
 
 
 task xlr_mem_frontdoor_driver::run_phase(uvm_phase phase);
-  `honeyb("MEM Driver", "run_phase initialized...")
+  `honeyb("MEM Driver", "  run_phase initialized...")
   req = xlr_mem_tx::type_id::create("req"); // Factorizing
   rsp = xlr_mem_tx::type_id::create("rsp");
 

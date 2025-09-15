@@ -15,8 +15,8 @@
 -log ../workspace/xrun.log
 -access +rwc
 -timescale 1ns/1ps
-#-seed random             # MEM_MODEL RANDOMIZATION ENABLE KNOB
-
+-seed random             # MEM_MODEL RANDOMIZATION ENABLE KNOB
+-coverage functional
 
 # Standard UVM library
 +define+UVM_NO_DEPRECATED 

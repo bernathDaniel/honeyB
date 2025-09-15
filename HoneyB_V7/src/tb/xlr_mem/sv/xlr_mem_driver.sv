@@ -42,7 +42,7 @@ endfunction : new
 task xlr_mem_driver::run_phase(uvm_phase phase);
 
   // Report Statement
-  `honeyb("MEM Driver", "run_phase initialized...")
+  `honeyb("MEM Driver", "  run_phase initialized...")
 
     // Boot Sequence
     //===============

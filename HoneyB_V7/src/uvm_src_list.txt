@@ -38,7 +38,7 @@
 ../src/tb/top/sv/top_config.sv
 ../src/tb/top/sv/top_seq_lib.sv
 ../src/tb/top/sv/port_converter.sv
-../src/tb/top/sv/reference.sv
+../src/tb/top/sv/xlr_reference_model.sv
 ../src/tb/top/sv/xlr_scoreboard.sv
 ../src/tb/top/sv/top_env.sv
 ../src/tb/top/sv/top_pkg.sv

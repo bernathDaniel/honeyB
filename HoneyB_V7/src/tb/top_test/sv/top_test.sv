@@ -36,11 +36,18 @@ function void top_test::build_phase(uvm_phase phase);
   m_config.m_xlr_mem_config.iface_string = "xlr_mem_if_2_8";
   xlr_mem_default_seq::type_id::set_type_override(xlr_mem_seq::get_type()); // Overriding the default seq with a custom one.
   
+  //===============================
+  //  Central Top Seq + Cov Ctrl
+  //===============================
+    m_config.m_seq_count = 5; // Overriding the # of sequences
+    m_config.m_xlr_gpp_config.cov_hit_thrshld = m_config.m_seq_count;
+    m_config.m_xlr_mem_config.cov_hit_thrshld = m_config.m_seq_count;
 
   //===================================
   //       CFG Overriding [GPP]
   //===================================
-
+    m_config.m_xlr_gpp_config.calcopy_enable = 0; // [0 = MATMUL | 1 = CALCOPY]
+  
   
 
   // === Optional per-mem overrides (uncomment as needed) =======================
@@ -48,8 +55,8 @@ function void top_test::build_phase(uvm_phase phase);
 
     //*******************************************************************************************//
     // COMMENT OUT IF MEM IS NOT USED                                                            //
-    //xlr_mem_driver::type_id::set_type_override(xlr_mem_frontdoor_driver::get_type());          //
-    m_config.m_xlr_mem_config.mem_is_used              = 0;  // Turn off with 0                  //
+    xlr_mem_driver::type_id::set_type_override(xlr_mem_frontdoor_driver::get_type());          //
+    m_config.m_xlr_mem_config.mem_is_used              = 1;  // Turn off with 0                  //
     //                                                                                           //
     //*******************************************************************************************//
 
@@ -57,7 +64,7 @@ function void top_test::build_phase(uvm_phase phase);
     // IMPORTANT - Memory Randomization Enabler Knob in "xrun_options.rtl"
     //------------------------------------------------------------------------
 
-    //m_config.m_xlr_mem_config.enable_write_dumps          = 1; // Debugger: Enable Write Dumps
+    m_config.m_xlr_mem_config.enable_write_dumps          = 1; // Debugger: Enable Write Dumps
 
     // MEM 0: preload from file
     //m_config.m_xlr_mem_config.init_policy_per_mem[0]   = INIT_FILE;

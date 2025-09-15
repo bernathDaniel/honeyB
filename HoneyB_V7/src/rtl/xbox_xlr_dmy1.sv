@@ -82,7 +82,7 @@ module xbox_xlr_dmy1 #(parameter NUM_MEMS=1,LOG2_LINES_PER_MEM=4)  (
   /**********************************************************************/
   /*                             DECLARATIONS                           */
   /**********************************************************************/
-  
+
   logic start_honey;    // The actual signal fed into our FSM.
   logic calcopy_honey;  // The calcopy honey
   logic calcopy_en;     // Enable the calcopy honey
@@ -91,7 +91,7 @@ module xbox_xlr_dmy1 #(parameter NUM_MEMS=1,LOG2_LINES_PER_MEM=4)  (
   logic done;
 
   logic [NUM_MEMS-1:0][7:0][31:0] mem_arr;             // mem buffer
-  logic [NUM_MEMS-1:0][3:0][31:0] res_arr, res_arr_ps; // pre-sampling + buffer for write
+  logic [NUM_MEMS-1:0][7:0][31:0] res_arr, res_arr_ps; // pre-sampling + buffer for write
 //==================================================================================================================================
 
   /**********************************************************************/
@@ -103,7 +103,7 @@ module xbox_xlr_dmy1 #(parameter NUM_MEMS=1,LOG2_LINES_PER_MEM=4)  (
 
   always_comb begin // Update comb logic - BUSY & DONE allocated registers
     host_regs_data_out_ps = host_regs_data_out;
-    //$monitor("[XLR DUT]: host_regs_data_out = %0h changes at %0t", host_regs_data_out, $time);  // prints on signal changes
+      //$monitor("[XLR DUT]: host_regs_data_out = %0h changes at %0t", host_regs_data_out, $time);  // prints on signal changes
 
     if (done) host_regs_data_out_ps[DONE_REG_IDX] = 32'h1;  // Update     
     else      host_regs_data_out_ps[DONE_REG_IDX] = 32'h0;  // Clear
@@ -174,16 +174,10 @@ always @(posedge clk, negedge rst_n) begin // Sequential FSM
   else if (state == READ) begin
     mem_arr[MEM0] <= xlr_mem_rdata[MEM0];
   end else if (state == CALC) begin
-    res_arr[MEM0] <= res_arr_ps[MEM0];
     if (calcopy_en) res_arr[MEM1] <= res_arr_ps[MEM0]; // Copy result into [MEM1] too
+                    res_arr[MEM0] <= res_arr_ps[MEM0];
   end else if (state == DONE) calcopy_en <= 1'b0;
 end
-
-// Simple MEM1 mirroring for dual-memory testing
-/*always @(posedge clk, negedge rst_n) begin
-    if (!rst_n) mem_arr[MEM1] <= '0;
-    else mem_arr[MEM1] <= mem_arr[MEM0];  // Mirror MEM0 operations
-end*/
 
 /************************************************/
 /*                 Combinational                */
@@ -201,17 +195,17 @@ always @* begin
   case(state)
     IDLE: begin
       busy = 1'b0;
-      if(start_honey) begin // Start = 1 | Start reading information
-        //$monitor("[XLR DUT]: start_honey = %h at %0t", start_honey, $time);  // prints on signal changes
+      if(start_honey || calcopy_honey) begin // Start = 1 | Start reading information
         xlr_mem_addr[MEM0]  = 8'h00; // Read from Addr[0]
         xlr_mem_rd  [MEM0]  = 1'b1;  // En Read
         next_state          = READ;  // Move to Read, Sample in next posedge
+          //$monitor("[XLR DUT]: at %0t\n\t\t\tstart_honey = %0h\n\t\t\tcalcopy_honey = %0h ", $time, start_honey, calcopy_honey);
       end
       else next_state = IDLE;
     end
     READ: begin
       next_state  = CALC;
-      //$monitor("[XLR DUT]: xlr_mem_rdata = %0h changes at %0t", xlr_mem_rdata[0], $time);  // prints on signal changes
+        //$monitor("[XLR DUT]: xlr_mem_rdata = %0h changes at %0t", xlr_mem_rdata[0], $time);
     end
     CALC: begin
       next_state = WRITE;
@@ -220,7 +214,7 @@ always @* begin
       res_arr_ps[MEM0][1] = mem_arr[MEM0][0] * mem_arr[MEM0][5] + mem_arr[MEM0][1] * mem_arr[MEM0][7];
       res_arr_ps[MEM0][2] = mem_arr[MEM0][2] * mem_arr[MEM0][4] + mem_arr[MEM0][3] * mem_arr[MEM0][6];
       res_arr_ps[MEM0][3] = mem_arr[MEM0][2] * mem_arr[MEM0][5] + mem_arr[MEM0][3] * mem_arr[MEM0][7];
-      
+      res_arr_ps[MEM0][7:4] = '0; // 0 out the unused
     end // -> Data Sampled into res_arr & ready to write
     WRITE: begin                         // WR REQ
       xlr_mem_addr[MEM0] = 8'h01;        // Write Result into Addr[1]
@@ -236,7 +230,7 @@ always @* begin
     DONE: begin
       busy = 1'b0;
       done = 1'b1;
-      //$monitor("[XLR DUT]: xlr_mem_wdata = %h changes at %0t", xlr_mem_wdata, $time);  // prints on signal changes
+       //$monitor("[XLR DUT]: changes at %0t\nxlr_mem_wdata[0] = %h\nxlr_mem_wdata[1] = %h", $time, xlr_mem_wdata[0], xlr_mem_wdata[1]);
       next_state = IDLE;
     end
     default: begin
@@ -246,6 +240,3 @@ always @* begin
   endcase
 end
 endmodule
-
-// A = xlr_mem_rdata[0][3:0] || B = xlr_mem_rdata[0][7:4] @ Addr : xlr_mem_addr[0]
-// C = xlr_mem_wdata[1][3:0] @ Addr : xlr_mem_addr[1]

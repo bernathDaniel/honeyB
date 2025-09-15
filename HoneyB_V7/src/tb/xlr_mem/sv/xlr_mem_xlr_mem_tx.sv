@@ -44,10 +44,11 @@ class xlr_mem_tx extends uvm_sequence_item;
 
     `uvm_object_utils(xlr_mem_tx)
 
-    // default event mode: "def" | options: def / rst_i / rst_o / rd / wr
     string e_mode = "def";
-    // default mem select: MEMA | options: MEMA(all) / MEM0 / MEM1 / ... / MEMC
+      // default event mode: "def" | options: def / rst_i / rst_o / rd / wr
+
     x_mem  mem  = MEMA;
+      // default mem select: MEMA | options: MEMA(all) / MEM0 / MEM1
 
     // Transaction variables
     rand logic [NUM_MEMS-1:0][7:0 ][31:0]                    mem_rdata;
@@ -70,7 +71,7 @@ class xlr_mem_tx extends uvm_sequence_item;
     extern function void set_e_mode(string s);
     extern function void set_mem(x_mem m);
     extern function void do_copy(uvm_object rhs);
-    //extern function void calcopy(uvm_object, x_mem to_mem, x_mem from_mem);
+    extern function void calcopy(x_mem to_mem, x_mem from_mem);
     extern function bit  do_compare(uvm_object rhs, uvm_comparer comparer);
     extern function void do_print(uvm_printer printer);
     extern function void do_record(uvm_recorder recorder);
@@ -89,7 +90,6 @@ function xlr_mem_tx::new(string name = "");
 endfunction : new
 
 
-// Contains the info for "Which event?"
 function void xlr_mem_tx::set_e_mode(string s);
     assert (s == "def" || s == "rst_i" || s == "rst_o" || s == "rd" || s == "wr")
     else begin
@@ -97,16 +97,15 @@ function void xlr_mem_tx::set_e_mode(string s);
         $sformatf("set_e_mode: invalid e_mode '%s' [ allowed: def / rst_i / rst_o / rd / wr ]", s))
         return;
     end
-    e_mode = s;
     // `honeyb("MEM TX", $sformatf("Setting e_mode to: %s...", s)) // Optional || Comment out to reduce log capacity
-endfunction
+    e_mode = s;
+endfunction // Contains the info for "Which event?"
 
 
-// Contains the info for : "Which Mem?"
 function void xlr_mem_tx::set_mem(x_mem m);
-  mem = m;
   // `honeyb("", $sformatf("Setting mem to: MEM[%0d]", mem))
-endfunction
+  mem = m;
+endfunction // Contains the info for : "Which Mem?"
 
 
 function void xlr_mem_tx::do_copy(uvm_object rhs);
@@ -171,37 +170,33 @@ function void xlr_mem_tx::do_copy(uvm_object rhs);
   end
 endfunction : do_copy
 
-/*function void xlr_mem_tx::calcopy(uvm_object rhs, x_mem to_mem, x_mem from_mem);
-  xlr_mem_tx rhs_;
-  if (!$cast(rhs_, rhs))
-    `uvm_fatal(get_type_name(), "Cast of rhs object failed")
-  e_mode  = rhs_.e_mode;  //| Which Event?
+function void xlr_mem_tx::calcopy(x_mem to_mem, x_mem from_mem);
   if (e_mode == "def") begin
-      mem_rdata [int'(to_mem)] = rhs_.mem_rdata [int'(from_mem)];
-      mem_addr  [int'(to_mem)] = rhs_.mem_addr  [int'(from_mem)]; 
-      mem_wdata [int'(to_mem)] = rhs_.mem_wdata [int'(from_mem)];
-      mem_be    [int'(to_mem)] = rhs_.mem_be    [int'(from_mem)];   
-      mem_rd    [int'(to_mem)] = rhs_.mem_rd    [int'(from_mem)];
-      mem_wr    [int'(to_mem)] = rhs_.mem_wr    [int'(from_mem)]; 
+      mem_rdata [int'(to_mem)] = mem_rdata [int'(from_mem)];
+      mem_addr  [int'(to_mem)] = mem_addr  [int'(from_mem)]; 
+      mem_wdata [int'(to_mem)] = mem_wdata [int'(from_mem)];
+      mem_be    [int'(to_mem)] = mem_be    [int'(from_mem)];   
+      mem_rd    [int'(to_mem)] = mem_rd    [int'(from_mem)];
+      mem_wr    [int'(to_mem)] = mem_wr    [int'(from_mem)];
     end else if (e_mode == "rst_i") begin
-      mem_rdata [int'(to_mem)] = rhs_.mem_rdata [int'(from_mem)];
+      mem_rdata [int'(to_mem)] = mem_rdata [int'(from_mem)];
     end else if (e_mode == "rst_o") begin
-      mem_addr  [int'(to_mem)] = rhs_.mem_addr  [int'(from_mem)]; 
-      mem_wdata [int'(to_mem)] = rhs_.mem_wdata [int'(from_mem)];
-      mem_be    [int'(to_mem)] = rhs_.mem_be    [int'(from_mem)];   
-      mem_rd    [int'(to_mem)] = rhs_.mem_rd    [int'(from_mem)];   
-      mem_wr    [int'(to_mem)] = rhs_.mem_wr    [int'(from_mem)];
+      mem_addr  [int'(to_mem)] = mem_addr  [int'(from_mem)]; 
+      mem_wdata [int'(to_mem)] = mem_wdata [int'(from_mem)];
+      mem_be    [int'(to_mem)] = mem_be    [int'(from_mem)];   
+      mem_rd    [int'(to_mem)] = mem_rd    [int'(from_mem)];   
+      mem_wr    [int'(to_mem)] = mem_wr    [int'(from_mem)];
     end else if (e_mode == "rd") begin
-      mem_rd    [int'(to_mem)] = rhs_.mem_rd    [int'(from_mem)];
-      mem_addr  [int'(to_mem)] = rhs_.mem_addr  [int'(from_mem)]; 
-      mem_rdata [int'(to_mem)] = rhs_.mem_rdata [int'(from_mem)];
+      mem_rd    [int'(to_mem)] = mem_rd    [int'(from_mem)];
+      mem_addr  [int'(to_mem)] = mem_addr  [int'(from_mem)]; 
+      mem_rdata [int'(to_mem)] = mem_rdata [int'(from_mem)];
     end else if (e_mode == "wr") begin
-      mem_wr    [int'(to_mem)] = rhs_.mem_wr    [int'(from_mem)]; 
-      mem_addr  [int'(to_mem)] = rhs_.mem_addr  [int'(from_mem)];
-      mem_be    [int'(to_mem)] = rhs_.mem_be    [int'(from_mem)];
-      mem_wdata [int'(to_mem)] = rhs_.mem_wdata [int'(from_mem)];
+      mem_wr    [int'(to_mem)] = mem_wr    [int'(from_mem)]; 
+      mem_addr  [int'(to_mem)] = mem_addr  [int'(from_mem)];
+      mem_be    [int'(to_mem)] = mem_be    [int'(from_mem)];
+      mem_wdata [int'(to_mem)] = mem_wdata [int'(from_mem)];
     end
-endfunction*/
+endfunction // Copy Calculated Data Between Memories
 
 function bit xlr_mem_tx::do_compare(uvm_object rhs, uvm_comparer comparer); // EXCLUDED - Input signals
     bit result;
@@ -332,36 +327,36 @@ function string xlr_mem_tx::convert2string(); // DEFAULT - print all
       // Separator
       $sformat(s, {"%s",
         "=========================================================================\n\n", PD,
-        "mem_rdata [%0d] = 'h%0h  'd%0d\n", PD, 
-        "mem_addr  [%0d] = 'h%0h  'd%0d\n", PD, 
-        "mem_wdata [%0d] = 'h%0h  'd%0d\n", PD,
-        "mem_be    [%0d] = 'h%0h  'd%0d\n", PD,
-        "mem_rd    [%0d] = 'h%0h  'd%0d\n", PD,
-        "mem_wr    [%0d] = 'h%0h  'd%0d\n\n"}, s,
-        mem_idx, mem_rdata [mem_idx], mem_rdata [mem_idx], 
-        mem_idx, mem_addr  [mem_idx], mem_addr  [mem_idx], 
-        mem_idx, mem_wdata [mem_idx], mem_wdata [mem_idx], 
-        mem_idx, mem_be    [mem_idx], mem_be    [mem_idx], 
-        mem_idx, mem_rd    [mem_idx], mem_rd    [mem_idx], 
-        mem_idx, mem_wr    [mem_idx], mem_wr    [mem_idx]);
+        "mem_rdata [%0d] = 'h%0h\n", PD, 
+        "mem_addr  [%0d] = 'h%0h\n", PD, 
+        "mem_wdata [%0d] = 'h%0h\n", PD,
+        "mem_be    [%0d] = 'h%0h\n", PD,
+        "mem_rd    [%0d] = 'h%0h\n", PD,
+        "mem_wr    [%0d] = 'h%0h\n\n"}, s,
+        mem_idx, mem_rdata [mem_idx], 
+        mem_idx, mem_addr  [mem_idx],
+        mem_idx, mem_wdata [mem_idx],
+        mem_idx, mem_be    [mem_idx], 
+        mem_idx, mem_rd    [mem_idx], 
+        mem_idx, mem_wr    [mem_idx]);
       
       if (mem_idx < int'(MEMA) - 1) $sformat(s, {"%s", PD}, s);
     end
   end else begin
     $sformat(s, {"%s", "\t[EVENT](DEFAULT):\n", PD,
       "=========================================================================\n\n", PD,
-      "mem_rdata [%0d] = 'h%0h  'd%0d\n", PD,
-      "mem_addr  [%0d] = 'h%0h  'd%0d\n", PD,
-      "mem_wdata [%0d] = 'h%0h  'd%0d\n", PD,
-      "mem_be    [%0d] = 'h%0h  'd%0d\n", PD,
-      "mem_rd    [%0d] = 'h%0h  'd%0d\n", PD,
-      "mem_wr    [%0d] = 'h%0h  'd%0d\n\n"}, s,
-      int'(mem), mem_rdata [int'(mem)], mem_rdata [int'(mem)],
-      int'(mem), mem_addr  [int'(mem)], mem_addr  [int'(mem)],
-      int'(mem), mem_wdata [int'(mem)], mem_wdata [int'(mem)],
-      int'(mem), mem_be    [int'(mem)], mem_be    [int'(mem)],
-      int'(mem), mem_rd    [int'(mem)], mem_rd    [int'(mem)],
-      int'(mem), mem_wr    [int'(mem)], mem_wr    [int'(mem)]);
+      "mem_rdata [%0d] = 'h%0h\n", PD,
+      "mem_addr  [%0d] = 'h%0h\n", PD,
+      "mem_wdata [%0d] = 'h%0h\n", PD,
+      "mem_be    [%0d] = 'h%0h\n", PD,
+      "mem_rd    [%0d] = 'h%0h\n", PD,
+      "mem_wr    [%0d] = 'h%0h\n\n"}, s,
+      int'(mem), mem_rdata [int'(mem)],
+      int'(mem), mem_addr  [int'(mem)],
+      int'(mem), mem_wdata [int'(mem)],
+      int'(mem), mem_be    [int'(mem)],
+      int'(mem), mem_rd    [int'(mem)],
+      int'(mem), mem_wr    [int'(mem)]);
   end
   return s;
 endfunction : convert2string
@@ -377,16 +372,16 @@ function string xlr_mem_tx::convert2string_in(); // print inputs
       // Separator
       $sformat(s, {"%s",
         "=========================================================================\n\n", PD,
-        "mem_rdata [%0d] = 'h%0h  'd%0d\n\n"}, s,
-        mem_idx, mem_rdata [mem_idx], mem_rdata [mem_idx]);
+        "mem_rdata [%0d] = 'h%0h\n\n"}, s,
+        mem_idx, mem_rdata [mem_idx]);
 
       if (mem_idx < int'(MEMA) - 1) $sformat(s, {"%s", PD}, s);
     end
   end else begin
     $sformat(s, {"%s", "\t[EVENT](INPUT_RESET):\n", PD,
       "=========================================================================\n\n", PD,
-      "mem_rdata [%0d] = 'h%0h  'd%0d\n\n"}, s,
-      int'(mem), mem_rdata[int'(mem)], mem_rdata[int'(mem)]);
+      "mem_rdata [%0d] = 'h%0h\n\n"}, s,
+      int'(mem), mem_rdata[int'(mem)]);
   end
   return s;
 endfunction : convert2string_in
@@ -401,32 +396,32 @@ function string xlr_mem_tx::convert2string_out(); // print rst_n for outputs eve
       // Separator
       $sformat(s, {"%s",
         "=========================================================================\n\n", PD, 
-        "mem_addr  [%0d] = 'h%0h  'd%0d\n", PD, 
-        "mem_wdata [%0d] = 'h%0h  'd%0d\n", PD,
-        "mem_be    [%0d] = 'h%0h  'd%0d\n", PD,
-        "mem_rd    [%0d] = 'h%0h  'd%0d\n", PD,
-        "mem_wr    [%0d] = 'h%0h  'd%0d\n\n"}, s,
-        mem_idx, mem_addr  [mem_idx], mem_addr  [mem_idx], 
-        mem_idx, mem_wdata [mem_idx], mem_wdata [mem_idx], 
-        mem_idx, mem_be    [mem_idx], mem_be    [mem_idx], 
-        mem_idx, mem_rd    [mem_idx], mem_rd    [mem_idx], 
-        mem_idx, mem_wr    [mem_idx], mem_wr    [mem_idx]);
+        "mem_addr  [%0d] = 'h%0h\n", PD, 
+        "mem_wdata [%0d] = 'h%0h\n", PD,
+        "mem_be    [%0d] = 'h%0h\n", PD,
+        "mem_rd    [%0d] = 'h%0h\n", PD,
+        "mem_wr    [%0d] = 'h%0h\n\n"}, s,
+        mem_idx, mem_addr  [mem_idx],
+        mem_idx, mem_wdata [mem_idx],
+        mem_idx, mem_be    [mem_idx], 
+        mem_idx, mem_rd    [mem_idx], 
+        mem_idx, mem_wr    [mem_idx]);
       
       if (mem_idx < int'(MEMA) - 1) $sformat(s, {"%s", PD}, s);
     end
   end else begin
     $sformat(s, {"%s", "\t[EVENT](OUTPUT_RESET):\n", PD,
       "=========================================================================\n\n", PD,
-      "mem_addr  [%0d] = 'h%0h  'd%0d\n", PD,
-      "mem_wdata [%0d] = 'h%0h  'd%0d\n", PD,
-      "mem_be    [%0d] = 'h%0h  'd%0d\n", PD,
-      "mem_rd    [%0d] = 'h%0h  'd%0d\n", PD,
-      "mem_wr    [%0d] = 'h%0h  'd%0d\n\n"}, s,
-      int'(mem), mem_addr [int'(mem)], mem_addr [int'(mem)],
-      int'(mem), mem_wdata[int'(mem)], mem_wdata[int'(mem)],
-      int'(mem), mem_be   [int'(mem)], mem_be   [int'(mem)],
-      int'(mem), mem_rd   [int'(mem)], mem_rd   [int'(mem)],
-      int'(mem), mem_wr   [int'(mem)], mem_wr   [int'(mem)]);
+      "mem_addr  [%0d] = 'h%0h\n", PD,
+      "mem_wdata [%0d] = 'h%0h\n", PD,
+      "mem_be    [%0d] = 'h%0h\n", PD,
+      "mem_rd    [%0d] = 'h%0h\n", PD,
+      "mem_wr    [%0d] = 'h%0h\n\n"}, s,
+      int'(mem), mem_addr [int'(mem)],
+      int'(mem), mem_wdata[int'(mem)],
+      int'(mem), mem_be   [int'(mem)],
+      int'(mem), mem_rd   [int'(mem)],
+      int'(mem), mem_wr   [int'(mem)]);
   end
   return s;
 endfunction : convert2string_out
@@ -440,26 +435,26 @@ function string xlr_mem_tx::convert2string_rd(); // print read operation
       // Separator
       $sformat(s, {"%s",
         "=========================================================================\n\n", PD,
-        "mem_rdata [%0d] = 'h%0h  'd%0d\n", PD, 
-        "mem_addr  [%0d] = 'h%0h  'd%0d\n", PD, 
-        "mem_rd    [%0d] = 'h%0h  'd%0d\n\n"}, s,
-        mem_idx, mem_rdata [mem_idx], mem_rdata [mem_idx], 
-        mem_idx, mem_addr  [mem_idx], mem_addr  [mem_idx], 
-        mem_idx, mem_rd    [mem_idx], mem_rd    [mem_idx]);
+        "mem_rdata [%0d] = 'h%0h\n", PD, 
+        "mem_addr  [%0d] = 'h%0h\n", PD, 
+        "mem_rd    [%0d] = 'h%0h\n\n"}, s,
+        mem_idx, mem_rdata [mem_idx], 
+        mem_idx, mem_addr  [mem_idx],
+        mem_idx, mem_rd    [mem_idx]);
       
       if (mem_idx < int'(MEMA) - 1) $sformat(s, {s, PD});
     end
   end else begin
     $sformat(s, {"%s","\t[EVENT](DUT_READ):\n", PD,
       "=========================================================================\n\n", PD,
-      "mem_rd    [%0d] = 'h%0h  'd%0d\n", PD,
-      "mem_addr  [%0d] = 'h%0h  'd%0d\n", PD,
-      "mem_be    [%0d] = 'h%0h  'd%0d\n", PD,
-      "mem_rdata [%0d] = 'h%0h  'd%0d\n\n"}, s,
-      int'(mem), mem_rd    [int'(mem)], mem_rd    [int'(mem)],
-      int'(mem), mem_addr  [int'(mem)], mem_addr  [int'(mem)],
-      int'(mem), mem_be    [int'(mem)], mem_be    [int'(mem)],
-      int'(mem), mem_rdata [int'(mem)], mem_rdata [int'(mem)]);
+      "mem_rd    [%0d] = 'h%0h\n", PD,
+      "mem_addr  [%0d] = 'h%0h\n", PD,
+      "mem_be    [%0d] = 'h%0h\n", PD,
+      "mem_rdata [%0d] = 'h%0h\n\n"}, s,
+      int'(mem), mem_rd    [int'(mem)],
+      int'(mem), mem_addr  [int'(mem)],
+      int'(mem), mem_be    [int'(mem)],
+      int'(mem), mem_rdata [int'(mem)]);
   end
   return s;
 endfunction : convert2string_rd
@@ -473,28 +468,28 @@ function string xlr_mem_tx::convert2string_wr(); // print write operation
       // Separator
       $sformat(s, {"%s",
         "=========================================================================\n\n", PD,
-        "mem_wr    [%0d] = 'h%0h  'd%0d\n", PD,
-        "mem_addr  [%0d] = 'h%0h  'd%0d\n", PD,
-        "mem_be    [%0d] = 'h%0h  'd%0d\n", PD,
-        "mem_wdata [%0d] = 'h%0h  'd%0d\n\n"}, s,
-        mem_idx, mem_wr   [mem_idx], mem_wr   [mem_idx],
-        mem_idx, mem_addr [mem_idx], mem_addr [mem_idx],
-        mem_idx, mem_be   [mem_idx], mem_be   [mem_idx],
-        mem_idx, mem_wdata[mem_idx], mem_wdata[mem_idx]);
+        "mem_wr    [%0d] = 'h%0h\n", PD,
+        "mem_addr  [%0d] = 'h%0h\n", PD,
+        "mem_be    [%0d] = 'h%0h\n", PD,
+        "mem_wdata [%0d] = 'h%0h\n\n"}, s,
+        mem_idx, mem_wr   [mem_idx],
+        mem_idx, mem_addr [mem_idx],
+        mem_idx, mem_be   [mem_idx],
+        mem_idx, mem_wdata[mem_idx]);
       
       if (mem_idx < int'(MEMA) - 1) $sformat(s, {"%s", PD}, s);
     end
   end else begin
     $sformat(s, {"%s","\t[EVENT](DUT_WRITE):\n", PD,
       "=========================================================================\n\n", PD,
-      "mem_wr    [%0d] = 'h%0h  'd%0d\n", PD,
-      "mem_addr  [%0d] = 'h%0h  'd%0d\n", PD,
-      "mem_be    [%0d] = 'h%0h  'd%0d\n", PD,
-      "mem_wdata [%0d] = 'h%0h  'd%0d\n\n"}, s,
-      int'(mem), mem_wr   [int'(mem)], mem_wr   [int'(mem)],
-      int'(mem), mem_addr [int'(mem)], mem_addr [int'(mem)],
-      int'(mem), mem_be   [int'(mem)], mem_be   [int'(mem)],
-      int'(mem), mem_wdata[int'(mem)], mem_wdata[int'(mem)]);
+      "mem_wr    [%0d] = 'h%0h\n", PD,
+      "mem_addr  [%0d] = 'h%0h\n", PD,
+      "mem_be    [%0d] = 'h%0h\n", PD,
+      "mem_wdata [%0d] = 'h%0h\n\n"}, s,
+      int'(mem), mem_wr   [int'(mem)],
+      int'(mem), mem_addr [int'(mem)],
+      int'(mem), mem_be   [int'(mem)],
+      int'(mem), mem_wdata[int'(mem)]);
   end
   return s;
 endfunction : convert2string_wr

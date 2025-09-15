@@ -19,6 +19,7 @@ class top_config extends uvm_object;
 
   rand xlr_mem_config  m_xlr_mem_config;
   rand xlr_gpp_config  m_xlr_gpp_config;
+  int m_seq_count;
 
   extern function new(string name = "");
 endclass : top_config 
@@ -36,12 +37,14 @@ function top_config::new(string name = ""); // DEFAULTS: DO NOT CHANGE!
   m_xlr_mem_config.uninit_policy      = UNINIT_LAST;
   m_xlr_mem_config.is_active          = UVM_ACTIVE;             
   m_xlr_mem_config.checks_enable      = 1;                      
-  m_xlr_mem_config.coverage_enable    = 0;   // disable the coverage for now                    
+  m_xlr_mem_config.coverage_enable    = 1;
+  m_xlr_mem_config.cov_hit_thrshld    = 1;                   
 
   m_xlr_gpp_config                    = new("m_xlr_gpp_config");
   m_xlr_gpp_config.is_active          = UVM_ACTIVE;             
   m_xlr_gpp_config.checks_enable      = 1;                      
-  m_xlr_gpp_config.coverage_enable    = 0;   // disable the coverage for now
+  m_xlr_gpp_config.coverage_enable    = 1;
+  m_xlr_gpp_config.cov_hit_thrshld    = 1;
 endfunction : new
 
 `endif // TOP_CONFIG_SV

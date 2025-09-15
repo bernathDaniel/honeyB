@@ -31,30 +31,31 @@ endclass : xlr_mem_default_seq
 
 function xlr_mem_default_seq::new(string name = "");
   super.new(name);
-endfunction : new
+endfunction // Boilerplate
 
 
 task xlr_mem_default_seq::body();
-  `honeyb("MEM SEQ", "New sequence starting...")
+  `honeyb("MEM Sequence", "New sequence starting...")
+    // Report
 
   req = xlr_mem_tx::type_id::create("req");
   start_item(req); 
   if ( !req.randomize() )
     `uvm_error("", "Failed to randomize transaction")
   finish_item(req); 
-
-  `honeyb("MEM SEQ", "Sequence completed...")
+  `honeyb("MEM Sequence", "Sequence completed!")
+    // Report
 endtask : body
 
 
 `ifndef UVM_POST_VERSION_1_1
   function uvm_phase xlr_mem_default_seq::get_starting_phase();
     return starting_phase;
-  endfunction: get_starting_phase
+  endfunction // Boilerplate
 
   function void xlr_mem_default_seq::set_starting_phase(uvm_phase phase);
     starting_phase = phase;
-  endfunction: set_starting_phase
+  endfunction // Boilerplate
 `endif
 
 
@@ -66,24 +67,23 @@ class xlr_mem_seq extends xlr_mem_default_seq; // extended_type
 
 	xlr_mem_config m_xlr_mem_config;
 
-	// constructor
 	function new(string name = "");
     super.new(name);
-	endfunction : new
+	endfunction // Boilerplate
 
 	task body();
-	// Report Statement
-	`honeyb("MEM SEQ", "New sequence starting...")
+    `honeyb("MEM Sequence", "New sequence starting...")
+      // Report
+    
+    req = xlr_mem_tx::type_id::create("req");
+    start_item(req); 
+    if ( !req.randomize() )
+      `uvm_error("", "Failed to randomize transaction")
+    finish_item(req); 
 
-	req = xlr_mem_tx::type_id::create("req");
-	start_item(req); 
-	if ( !req.randomize() )
-    `uvm_error("", "Failed to randomize transaction")
-	finish_item(req); 
-
-	// Report Statement
-	`honeyb("MEM SEQ", "Sequence completed...")
-	endtask : body
+    `honeyb("MEM Sequence", "Sequence completed!")
+      // Report
+  endtask : body
 endclass : xlr_mem_seq
 `endif // XLR_MEM_2_8_SEQ_SV
 `endif // XLR_MEM_SEQ_LIB_SV

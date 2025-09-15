@@ -16,7 +16,7 @@ class xlr_gpp_default_seq extends uvm_sequence #(xlr_gpp_tx);
 
   `uvm_object_utils(xlr_gpp_default_seq)
 
-  bit calcopy_en = 1'b1;
+  xlr_gpp_config m_xlr_gpp_config;
 
   extern function new(string name = "");
   extern task body();
@@ -36,38 +36,35 @@ endfunction : new
 
 task xlr_gpp_default_seq::body();
 
-  if ($test$plusargs("CALCOPY"))      calcopy_en = 1'b1;
-  if ($test$plusargs("NOCALCOPY"))    calcopy_en = 1'b0;
+  if ( !uvm_config_db#(xlr_gpp_config)::get(get_sequencer(), "", "config", m_xlr_gpp_config) )
+      `uvm_error(get_type_name(), "Failed to get config object")
 
-  if (calcopy_en == 1'b1) begin
-    `honeyb("GPP SEQ", "New sequence starting...", " [Calcopy!]")
+  if (m_xlr_gpp_config.calcopy_enable == 1'b1) begin
+    `honeyb("GPP Sequence", "New sequence starting...", " [CALCOPY]")
 
     req = xlr_gpp_tx::type_id::create("req");
     start_item(req); 
     if ( !req.randomize() )
       `uvm_error("", "Failed to randomize transaction")
 
-    req.host_regsi[START_IDX_REG] = 32'h2; // CALCOPY
-    req.host_regs_valid[START_IDX_REG] = 32'h1; // CALCOPY
+    req.host_regsi[START_IDX_REG] = 32'h2;      // CALCOPY
+    req.host_regs_valid[START_IDX_REG] = 32'h1; // CALCOPY = VALID
 
     finish_item(req); 
 
-    `honeyb("GPP SEQ", "Sequence completed...", " [Calcopy!]")
+    `honeyb("GPP Sequence", "Sequence completed! ", " [CALCOPY]")
 
   end else begin
 
-    `honeyb("GPP SEQ", "New sequence starting...", "Standard...")
-
+    `honeyb("GPP Sequence", "New sequence starting...", "[MATMUL]")
+      $display(); // CLI
     req = xlr_gpp_tx::type_id::create("req");
     start_item(req); 
     if ( !req.randomize() )
       `uvm_error("", "Failed to randomize transaction")
-
-    req.host_regsi[START_IDX_REG] = 32'h1; // CLASSIC
-
-    finish_item(req); 
-
-    `honeyb("GPP SEQ", "Sequence completed...", "Standard...")
+    finish_item(req);
+    `honeyb("GPP Sequence", "Sequence completed! ", "[MATMUL]")
+      // Report
   end
 endtask : body
 
@@ -75,13 +72,11 @@ endtask : body
 `ifndef UVM_POST_VERSION_1_1
 function uvm_phase xlr_gpp_default_seq::get_starting_phase();
   return starting_phase;
-endfunction: get_starting_phase
-
+endfunction // Boilerplate
 
 function void xlr_gpp_default_seq::set_starting_phase(uvm_phase phase);
   starting_phase = phase;
-endfunction: set_starting_phase
+endfunction // Boilerplate
 `endif
-
 `endif // XLR_GPP_SEQ_LIB_SV
 

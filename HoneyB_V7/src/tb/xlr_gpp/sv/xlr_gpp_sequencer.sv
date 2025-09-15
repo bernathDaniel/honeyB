@@ -1,5 +1,5 @@
 //=============================================================================
-// Project    : HoneyB V4
+// Project    : HoneyB V7
 // File Name  : xlr_gpp_sequencer.sv
 //=============================================================================
 // Description: Sequencer for xlr_gpp
