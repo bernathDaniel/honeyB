@@ -298,23 +298,23 @@ endfunction : do_record
 
 function void xlr_mem_tx::do_pack(uvm_packer packer);
   super.do_pack     (packer    );
-  `uvm_pack_int     (mem_rdata ) 
-  `uvm_pack_int     (mem_addr  )  
-  `uvm_pack_int     (mem_wdata ) 
-  `uvm_pack_int     (mem_be    )    
-  `uvm_pack_int     (mem_rd    )    
-  `uvm_pack_int     (mem_wr    )    
+  `uvm_pack_sarray     (mem_rdata ) 
+  `uvm_pack_sarray     (mem_addr  )  
+  `uvm_pack_sarray     (mem_wdata ) 
+  `uvm_pack_sarray     (mem_be    )    
+  `uvm_pack_sarray     (mem_rd    )    
+  `uvm_pack_sarray     (mem_wr    )    
 endfunction : do_pack
 
 
 function void xlr_mem_tx::do_unpack(uvm_packer packer);
   super.do_unpack   (packer    );
-  `uvm_unpack_int   (mem_rdata ) 
-  `uvm_unpack_int   (mem_addr  )  
-  `uvm_unpack_int   (mem_wdata ) 
-  `uvm_unpack_int   (mem_be    )    
-  `uvm_unpack_int   (mem_rd    )    
-  `uvm_unpack_int   (mem_wr    )    
+  `uvm_unpack_sarray   (mem_rdata ) 
+  `uvm_unpack_sarray   (mem_addr  )  
+  `uvm_unpack_sarray   (mem_wdata ) 
+  `uvm_unpack_sarray   (mem_be    )    
+  `uvm_unpack_sarray   (mem_rd    )    
+  `uvm_unpack_sarray   (mem_wr    )    
 endfunction : do_unpack
 
 

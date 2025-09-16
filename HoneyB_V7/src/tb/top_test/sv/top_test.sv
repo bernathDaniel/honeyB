@@ -44,19 +44,22 @@ function void top_test::build_phase(uvm_phase phase);
     m_config.m_xlr_mem_config.cov_hit_thrshld = m_config.m_seq_count;
 
   //===================================
-  //       CFG Overriding [GPP]
+  //     Func Mode Overriding [GPP]
   //===================================
-    m_config.m_xlr_gpp_config.calcopy_enable = 0; // [0 = MATMUL | 1 = CALCOPY]
+    
+    m_config.m_xlr_gpp_config.calcopy_enable = 1; // [0 = MATMUL | 1 = CALCOPY]
   
-  
-
-  // === Optional per-mem overrides (uncomment as needed) =======================
-  // ============================================================================
+  //==========================================================
+  //     Optional per-mem overrides (uncomment as needed)
+  //==========================================================
 
     //*******************************************************************************************//
-    // COMMENT OUT IF MEM IS NOT USED                                                            //
-    xlr_mem_driver::type_id::set_type_override(xlr_mem_frontdoor_driver::get_type());          //
-    m_config.m_xlr_mem_config.mem_is_used              = 1;  // Turn off with 0                  //
+    //                                                                                           //
+    //                                                                                           //
+                  m_config.m_xlr_mem_config.mem_is_used = 1;  // Turn off with 0                 
+      if (m_config.m_xlr_mem_config.mem_is_used)    
+        xlr_mem_driver::type_id::set_type_override(xlr_mem_frontdoor_driver::get_type());        //
+    //                                                                                           //
     //                                                                                           //
     //*******************************************************************************************//
 

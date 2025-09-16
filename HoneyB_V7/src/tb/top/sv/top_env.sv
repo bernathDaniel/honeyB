@@ -81,15 +81,23 @@ function void top_env::connect_phase(uvm_phase phase);
     //==============================================
     // [MEM] Agent APs (IN/OUT) <-> Coverage AEs
     //==============================================
-      m_xlr_mem_agent.analysis_port_in.connect(m_xlr_mem_coverage.mem_cov_in_export);
-      m_xlr_mem_agent.analysis_port_out.connect(m_xlr_mem_coverage.mem_cov_out_export);
-    
+      if (!m_config.m_xlr_mem_config.coverage_enable)
+        `honeyb("Top Environemnt", "MEM Coverage Disabled!")
+      else begin
+        `honeyb("Top Environment", "MEM Coverage Enabled, Connecting...")
+        m_xlr_mem_agent.analysis_port_in.connect(m_xlr_mem_coverage.mem_cov_in_export);
+        m_xlr_mem_agent.analysis_port_out.connect(m_xlr_mem_coverage.mem_cov_out_export);
+      end
     //==============================================
     // [GPP] Agent APs (IN/OUT) <-> Coverage AEs
     //==============================================
-      m_xlr_gpp_agent.analysis_port_in.connect(m_xlr_gpp_coverage.gpp_cov_in_export);
-      m_xlr_gpp_agent.analysis_port_out.connect(m_xlr_gpp_coverage.gpp_cov_out_export);
-
+      if (!m_config.m_xlr_gpp_config.coverage_enable)
+        `honeyb("Top Environemnt", "GPP Coverage Disabled!")
+      else begin
+        `honeyb("Top Environment", "GPP Coverage Enabled, Connecting...")
+        m_xlr_gpp_agent.analysis_port_in.connect(m_xlr_gpp_coverage.gpp_cov_in_export);
+        m_xlr_gpp_agent.analysis_port_out.connect(m_xlr_gpp_coverage.gpp_cov_out_export);
+      end
     //==============================================
     // [MEM&GPP] Agent APs (IN) <-> REF Model AEs
     //==============================================
@@ -126,6 +134,8 @@ task top_env::run_phase(uvm_phase phase);
     `uvm_fatal("", "Failed to randomize virtual sequence")
   vseq.m_xlr_mem_agent = m_xlr_mem_agent;
   vseq.m_xlr_gpp_agent = m_xlr_gpp_agent;
+  vseq.m_seq_count = m_config.m_seq_count;
+    // Overriding m_seq_count through Top_Test!
   vseq.set_starting_phase(phase);
   vseq.start(null);
 endtask // Boilerplate

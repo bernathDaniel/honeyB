@@ -121,6 +121,30 @@ package honeyb_pkg;
       CALCOPY
     } func_mode; // DUT / REF Functionality Modes
 
+  //=====================================================
+  // Special Coverage Parameters
+  //=====================================================
+    
+    localparam logic [NUM_MEMS-1:0][LOG2_LINES_PER_MEM-1:0] MEM_0_ADDR_0 = '0; // mem_addr[0] = 8'h01                                
+
+    localparam logic [NUM_MEMS-1:0][LOG2_LINES_PER_MEM-1:0] MEM_0_ADDR_1 = 8'h01; // mem_addr[0] = 8'h01                                
+
+    localparam logic [NUM_MEMS-1:0][LOG2_LINES_PER_MEM-1:0] MEM_0_1_ADDR_1 = 16'h0101; // mem_addr[0] = mem_addr[1] = 8'h01                                
+                                          
+    localparam logic [NUM_MEMS-1:0][7:0 ][31:0] MEM_RDATA_0 = '0; // Unused                            
+
+    localparam logic [NUM_MEMS-1:0] MEM_RD_0       = 1'b1;
+    
+    localparam logic [NUM_MEMS-1:0] MEM_WR_0       = 1'b1;
+    localparam logic [NUM_MEMS-1:0] MEM_WR_0_1     = 2'b11;
+    
+    localparam logic [NUM_MEMS-1:0][31:0] MEM_BE_ALL_0   = 32'hFFFF_FFFF;
+    localparam logic [NUM_MEMS-1:0][31:0] MEM_BE_ALL_0_1 = 64'hFFFF_FFFF_FFFF_FFFF;
+
+    localparam logic [NUM_MEMS-1:0][7:0 ][31:0] MEM_WDATA_0   = '0; // Unused
+    localparam logic [NUM_MEMS-1:0][7:0 ][31:0] MEM_WDATA_0_1 = '0; // Unused
+
+
 	//=====================================================
 	// HoneyB Messages
 	//=====================================================

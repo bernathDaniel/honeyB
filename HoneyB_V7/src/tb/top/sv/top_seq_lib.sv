@@ -23,8 +23,10 @@ class top_default_seq extends uvm_sequence #(uvm_sequence_item);
   xlr_mem_agent  m_xlr_mem_agent;
   xlr_gpp_agent  m_xlr_gpp_agent;
 
-  // Sequence #
-  int m_seq_count = 5;
+  top_config m_config;
+
+  int m_seq_count = 1;
+    // DONT CHANGE | Controlled Through Top Test!
 
   // Sequence iteration counter
   int iteration_count = 0;

@@ -231,6 +231,7 @@ always @* begin
       busy = 1'b0;
       done = 1'b1;
        //$monitor("[XLR DUT]: changes at %0t\nxlr_mem_wdata[0] = %h\nxlr_mem_wdata[1] = %h", $time, xlr_mem_wdata[0], xlr_mem_wdata[1]);
+
       next_state = IDLE;
     end
     default: begin

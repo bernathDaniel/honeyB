@@ -16,7 +16,7 @@
 -access +rwc
 -timescale 1ns/1ps
 -seed random             # MEM_MODEL RANDOMIZATION ENABLE KNOB
--coverage functional
+-coverage u              # COVERAGE SAMPLING ENABLER BY XCELIUM - MUST USE FOR COVERAGE!!
 
 # Standard UVM library
 +define+UVM_NO_DEPRECATED 
