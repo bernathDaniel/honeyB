@@ -87,7 +87,7 @@ class xlr_gpp_coverage extends uvm_component;
   extern function void build_phase(uvm_phase phase);
   extern function void write_gpp_cov_in(input xlr_gpp_tx t);
   extern function void write_gpp_cov_out(input xlr_gpp_tx t);
-  extern function void report_phase(uvm_phase phase);
+  extern function void final_phase(uvm_phase phase);
 endclass : xlr_gpp_coverage 
 
 
@@ -131,8 +131,11 @@ function void xlr_gpp_coverage::write_gpp_cov_out(input xlr_gpp_tx t);
 endfunction
 
 
-function void xlr_gpp_coverage::report_phase(uvm_phase phase);
+function void xlr_gpp_coverage::final_phase(uvm_phase phase);
   if (m_xlr_gpp_config.coverage_enable) begin
+    $display(); // CLI
+    `honeyb("Coverage", "Coverage Report:")
+    `honeyb("Coverage", "--------------------")
     `honeyb("Coverage", $sformatf("[IN ] Cross start_X_valid = %.1f%%", cg_in.start_X_valid.get_inst_coverage()))
       //`honeyb("Coverage", $sformatf("[IN ] Coverage score      = %3.1f%%", cg_in.get_inst_coverage()))
       //`honeyb("Coverage", $sformatf("cg_in_is_covered = %0d", cg_in_is_covered))
@@ -141,9 +144,11 @@ function void xlr_gpp_coverage::report_phase(uvm_phase phase);
       //`honeyb("Coverage", $sformatf("[OUT] Coverage score      = %3.1f%%", cg_out.get_inst_coverage()))
       //`honeyb("Coverage", $sformatf("cg_out_is_covered = %0d", cg_out_is_covered))
     $display(); // CLI
-  end else
+  end else begin
     `honeyb("Coverage", "Coverage disabled for the GPP agent")
-endfunction : report_phase
+      $display(); // CLI
+  end
+endfunction : final_phase
 
 `endif // XLR_GPP_COVERAGE_SV
 

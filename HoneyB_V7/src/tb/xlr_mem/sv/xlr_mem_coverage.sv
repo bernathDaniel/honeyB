@@ -78,7 +78,7 @@ class xlr_mem_coverage extends uvm_component;
   extern function void build_phase(uvm_phase phase);
   extern function void write_mem_cov_in(input xlr_mem_tx t);
   extern function void write_mem_cov_out(input xlr_mem_tx t);
-  extern function void report_phase(uvm_phase phase);
+  extern function void final_phase(uvm_phase phase);
 
   //===================
   //  Helper Methods
@@ -113,8 +113,6 @@ endfunction // Boilerplate + m_cov constrct.
 
 function void xlr_mem_coverage::write_mem_cov_in(input xlr_mem_tx t);
   tx_in.copy(t);
-  tx_in.unpack();
-  
   if (m_xlr_mem_config.coverage_enable)
   begin
     `honeyb("Hello", "Mem Coverage In | ", $sformatf("coverage_enable = %0d", m_xlr_mem_config.coverage_enable))
@@ -135,15 +133,18 @@ function void xlr_mem_coverage::write_mem_cov_out(input xlr_mem_tx t);
 endfunction
 
 
-function void xlr_mem_coverage::report_phase(uvm_phase phase);
+function void xlr_mem_coverage::final_phase(uvm_phase phase);
   if (m_xlr_mem_config.coverage_enable) begin
-    `uvm_info("", $sformatf("[MEM IN]  Coverage score = %3.1f%%", cg_in.get_inst_coverage()), UVM_MEDIUM)
-    `uvm_info("", $sformatf("[MEM OUT] Coverage score = %3.1f%%", cg_out.get_inst_coverage()), UVM_MEDIUM)
-    `honeyb("DEBUG", $sformatf("cg_in_is_covered = %0d", cg_in_is_covered))
-    `honeyb("DEBUG", $sformatf("cg_out_is_covered = %0d", cg_out_is_covered))
-  end else
+    `honeyb("Coverage", $sformatf("[IN ] Coverage score      = %.1f%%", cg_in.get_inst_coverage()))
+      //`honeyb("DEBUG", $sformatf("cg_in_is_covered = %0d", cg_in_is_covered))
+    `honeyb("Coverage", $sformatf("[OUT] Coverage score      = %.1f%%", cg_out.get_inst_coverage()))
+      //`honeyb("DEBUG", $sformatf("cg_out_is_covered = %0d", cg_out_is_covered))
+      $display(); // CLI
+  end else begin
     `honeyb("Coverage", "Coverage disabled for the MEM agent")
-endfunction : report_phase
+      $display(); // CLI
+  end
+endfunction : final_phase
 
 
 //=============================================
