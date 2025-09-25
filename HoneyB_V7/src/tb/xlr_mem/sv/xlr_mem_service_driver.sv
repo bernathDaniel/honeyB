@@ -1,20 +1,20 @@
 //=============================================================================
 // Project  : HoneyB V7
-// File Name: xlr_mem_frontdoor_driver.sv
+// File Name: xlr_mem_service_driver.sv
 //=============================================================================
-// Description: FRONTDOOR Driver for xlr_mem
+// Description: Memory Service Driver for xlr_mem
 //=============================================================================
 
-`ifndef XLR_MEM_FRONTDOOR_DRIVER_SV
-`define XLR_MEM_FRONTDOOR_DRIVER_SV
+`ifndef XLR_MEM_SERVICE_DRIVER_SV
+`define XLR_MEM_SERVICE_DRIVER_SV
 
 `include "uvm_macros.svh"
 import uvm_pkg::*;
 import honeyb_pkg::*;
 import xlr_mem_pkg::*;
 
-class xlr_mem_frontdoor_driver extends xlr_mem_driver;
-  `uvm_component_utils(xlr_mem_frontdoor_driver)
+class xlr_mem_service_driver extends xlr_mem_driver;
+  `uvm_component_utils(xlr_mem_service_driver)
 
   uvm_blocking_transport_port#(
     xlr_mem_tx, // req
@@ -42,18 +42,18 @@ class xlr_mem_frontdoor_driver extends xlr_mem_driver;
 endclass // Boilerplate + b_transport + Helpers
 
 
-function xlr_mem_frontdoor_driver::new(string name, uvm_component parent);
+function xlr_mem_service_driver::new(string name, uvm_component parent);
   super.new(name, parent);
 endfunction // Boilerplate
 
 
-function void xlr_mem_frontdoor_driver::build_phase (uvm_phase phase);
+function void xlr_mem_service_driver::build_phase (uvm_phase phase);
   super.build_phase(phase);
   model_bt = new("model_bt", this);
 endfunction // Boilerplate
 
 
-task xlr_mem_frontdoor_driver::run_phase(uvm_phase phase);
+task xlr_mem_service_driver::run_phase(uvm_phase phase);
   `honeyb("MEM Driver", "  run_phase initialized...")
   req = xlr_mem_tx::type_id::create("req"); // Factorizing
   rsp = xlr_mem_tx::type_id::create("rsp");
@@ -68,7 +68,7 @@ task xlr_mem_frontdoor_driver::run_phase(uvm_phase phase);
 endtask // Boilerplate + Boot Seq + Report
 
 
-task xlr_mem_frontdoor_driver::do_drive(); // - OK - // - FINAL - //
+task xlr_mem_service_driver::do_drive(); // - OK - // - FINAL - //
   forever begin
     flush_all(); // Refresh the Req TX + "*_mems" arrays
 
@@ -100,12 +100,12 @@ endtask // Memory Service + Report
 //            Driver Helper Methods
 //=============================================
 
-  function void xlr_mem_frontdoor_driver::flush_all(); 
+  function void xlr_mem_service_driver::flush_all(); 
     req.mem_addr = '0; req.mem_rdata = '0; req.mem_wdata = '0; req.mem_be = '0; req.mem_rd = '0; req.mem_wr = '0;
                                                                                 rd_mems    = '0; wr_mems    = '0;
   endfunction // Complete flush for new incoming requests
 
-  function void xlr_mem_frontdoor_driver::create_req(int m);
+  function void xlr_mem_service_driver::create_req(int m);
               req.mem_addr[m]  = m_xlr_mem_if.get_addr  (x_mem'(m));
               req.mem_rd[m]    = m_xlr_mem_if.get_rd    (x_mem'(m));
               req.mem_wr[m]    = m_xlr_mem_if.get_wr    (x_mem'(m));
@@ -113,9 +113,9 @@ endtask // Memory Service + Report
               req.mem_be[m]    = m_xlr_mem_if.get_be    (x_mem'(m));
   endfunction // Create a complete request - memory deals with it.
 
-  function void xlr_mem_frontdoor_driver::create_req_report();
-    string rd_req_report = "Read from Memories: | ";
-    string wr_req_report = "Write to Memories : | ";
+  function void xlr_mem_service_driver::create_req_report();
+    string rd_req_report = "Read from | ";
+    string wr_req_report = "Write to  | ";
 
     bit rd_rep_ok = 1'b0; // Flags ok
     bit wr_rep_ok = 1'b0;
@@ -145,5 +145,5 @@ endtask // Memory Service + Report
     // wait until wr is enabled signaling the end of operation for DUT
     m_xlr_mem_if.wr_wait_until_asserted(MEM0);
   */
-`endif // XLR_MEM_FRONTDOOR_DRIVER_SV
+`endif // XLR_MEM_SERVICE_DRIVER_SV
 

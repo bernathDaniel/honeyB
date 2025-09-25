@@ -33,8 +33,8 @@
   //              It won't work if we use only one of the features !!
 //=============================================================================
 
-`ifndef XLR_MEM_SEQ_ITEM_SV
-`define XLR_MEM_SEQ_ITEM_SV
+`ifndef XLR_MEM_XLR_MEM_TX_SV
+`define XLR_MEM_XLR_MEM_TX_SV
 
 `include "uvm_macros.svh"
 import uvm_pkg::*;
@@ -70,6 +70,7 @@ class xlr_mem_tx extends uvm_sequence_item;
     extern function new(string name = "");
     extern function void set_e_mode(string s);
     extern function void set_mem(x_mem m);
+    extern function void op_flush();
     extern function void do_copy(uvm_object rhs);
     extern function void calcopy(x_mem to_mem, x_mem from_mem);
     extern function bit  do_compare(uvm_object rhs, uvm_comparer comparer);
@@ -106,6 +107,21 @@ function void xlr_mem_tx::set_mem(x_mem m);
   // `honeyb("", $sformatf("Setting mem to: MEM[%0d]", mem))
   mem = m;
 endfunction // Contains the info for : "Which Mem?"
+
+
+function void xlr_mem_tx::op_flush();
+  assert(e_mode == "rst_o")
+  else begin
+    `uvm_fatal(get_type_name(),
+      $sformatf("op_flush: invalid e_mode '%s' [allowed: rst_o]", e_mode))
+      return;
+  end
+  mem_rd    = '0;
+  mem_wr    = '0;
+  mem_be    = '0;
+  mem_addr  = '0;
+  mem_wdata = '0;
+endfunction
 
 
 function void xlr_mem_tx::do_copy(uvm_object rhs);
@@ -493,4 +509,4 @@ function string xlr_mem_tx::convert2string_wr(); // print write operation
   end
   return s;
 endfunction : convert2string_wr
-`endif // XLR_MEM_SEQ_ITEM_SV
+`endif // XLR_MEM_XLR_MEM_TX_SV

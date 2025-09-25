@@ -30,7 +30,7 @@ endclass : xlr_gpp_default_seq
 
 function xlr_gpp_default_seq::new(string name = "");
   super.new(name);
-endfunction : new
+endfunction // Boilerplate
 
 
 

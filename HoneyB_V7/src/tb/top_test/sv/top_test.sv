@@ -35,20 +35,20 @@ function void top_test::build_phase(uvm_phase phase);
   // Strings to uniquely identify instances of parameterized interface. Used by factory overrides.
   m_config.m_xlr_mem_config.iface_string = "xlr_mem_if_2_8";
   xlr_mem_default_seq::type_id::set_type_override(xlr_mem_seq::get_type()); // Overriding the default seq with a custom one.
-  
+
   //===============================
   //  Central Top Seq + Cov Ctrl
   //===============================
-    m_config.m_seq_count = 5; // Overriding the # of sequences
+    m_config.m_seq_count = 20; // Overriding the # of sequences
     m_config.m_xlr_gpp_config.cov_hit_thrshld = m_config.m_seq_count;
     m_config.m_xlr_mem_config.cov_hit_thrshld = m_config.m_seq_count;
 
   //===================================
   //     Func Mode Overriding [GPP]
   //===================================
-    
+
     m_config.m_xlr_gpp_config.calcopy_enable = 1; // [0 = MATMUL | 1 = CALCOPY]
-  
+
   //==========================================================
   //     Optional per-mem overrides (uncomment as needed)
   //==========================================================
@@ -57,8 +57,8 @@ function void top_test::build_phase(uvm_phase phase);
     //                                                                                           //
     //                                                                                           //
                   m_config.m_xlr_mem_config.mem_is_used = 1;  // Turn off with 0                 
-      if (m_config.m_xlr_mem_config.mem_is_used)    
-        xlr_mem_driver::type_id::set_type_override(xlr_mem_frontdoor_driver::get_type());        //
+                    if (m_config.m_xlr_mem_config.mem_is_used)    
+                      xlr_mem_driver::type_id::set_type_override(xlr_mem_service_driver::get_type());
     //                                                                                           //
     //                                                                                           //
     //*******************************************************************************************//
@@ -67,19 +67,21 @@ function void top_test::build_phase(uvm_phase phase);
     // IMPORTANT - Memory Randomization Enabler Knob in "xrun_options.rtl"
     //------------------------------------------------------------------------
 
-    m_config.m_xlr_mem_config.enable_write_dumps          = 1; // Debugger: Enable Write Dumps
+    if (m_config.m_xlr_mem_config.mem_is_used) begin
+      `honeyb("CFG DB Control Center", "Setting Mem Model Configurations...")
+      m_config.m_xlr_mem_config.enable_write_dumps       = 1;// Set to 0 to disable
+      m_config.m_xlr_mem_config.sim_dump_limit           = 2;
+      m_config.m_xlr_mem_config.init_policy              = INIT_RANDOM;
+      m_config.m_xlr_mem_config.uninit_policy            = UNINIT_LAST;
+    end
 
     // MEM 0: preload from file
     //m_config.m_xlr_mem_config.init_policy_per_mem[0]   = INIT_FILE;
     //m_config.m_xlr_mem_config.init_file_per_mem[0]     = "../inputs/mem_init_files/mem0_init_test.hex";
 
     // MEM 1: start empty; treat uninit reads as zeros
-    //m_config.m_xlr_mem_config.init_policy_per_mem[1]   = INIT_NONE;
-    //m_config.m_xlr_mem_config.uninit_policy_by_mem[1]  = UNINIT_ZERO;
-
-
-    // Optional: escalate uninit reads to ERROR instead of WARN
-    // m_config.m_xlr_mem_config.uninit_is_error          = 1;
+    m_config.m_xlr_mem_config.init_policy_per_mem[1]   = INIT_NONE;
+    m_config.m_xlr_mem_config.uninit_policy_by_mem[1]  = UNINIT_ZERO;
     
   m_env = top_env::type_id::create("m_env", this);
 endfunction : build_phase

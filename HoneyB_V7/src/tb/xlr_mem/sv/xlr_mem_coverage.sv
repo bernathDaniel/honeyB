@@ -115,9 +115,8 @@ function void xlr_mem_coverage::write_mem_cov_in(input xlr_mem_tx t);
   tx_in.copy(t);
   if (m_xlr_mem_config.coverage_enable)
   begin
-    `honeyb("Hello", "Mem Coverage In | ", $sformatf("coverage_enable = %0d", m_xlr_mem_config.coverage_enable))
-    cg_in.sample();
-    if (cg_in.get_inst_coverage() >= 100) cg_in_is_covered = 1;
+        cg_in.sample();
+        if (cg_in.get_inst_coverage() >= 100) cg_in_is_covered = 1;
   end
 endfunction
 
@@ -126,9 +125,8 @@ function void xlr_mem_coverage::write_mem_cov_out(input xlr_mem_tx t);
   tx_out.copy(t);
     if (m_xlr_mem_config.coverage_enable)
     begin
-      `honeyb("Hello", "Mem Coverage Out")
-      cg_out.sample();
-      if (cg_out.get_inst_coverage() >= 100) cg_out_is_covered = 1;
+          cg_out.sample();
+          if (cg_out.get_inst_coverage() >= 100) cg_out_is_covered = 1;
     end
 endfunction
 

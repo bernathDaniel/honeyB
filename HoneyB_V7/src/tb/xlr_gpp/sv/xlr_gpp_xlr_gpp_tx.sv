@@ -1,6 +1,6 @@
 //=============================================================================
 // Project    : HoneyB V7
-// File Name  : xlr_gpp_seq_item.sv
+// File Name  : xlr_gpp_xlr_gpp_tx.sv
 //=============================================================================
 // Description: Sequence item for xlr_gpp_sequencer
   //
@@ -20,8 +20,8 @@
   //                            | def || rst_i || rst_o || start || busy || done |
 //=============================================================================
 
-`ifndef XLR_GPP_SEQ_ITEM_SV
-`define XLR_GPP_SEQ_ITEM_SV
+`ifndef XLR_GPP_XLR_GPP_TX_SV
+`define XLR_GPP_XLR_GPP_TX_SV
 
 `include "uvm_macros.svh"
 import uvm_pkg::*;
@@ -60,6 +60,7 @@ class xlr_gpp_tx extends uvm_sequence_item;
 
   extern function void    set_e_mode(string s);
   extern function void    set_f_mode(func_mode f);
+  extern function void    op_flush();
   extern function void    do_copy   (uvm_object rhs);
   extern function bit     do_compare(uvm_object rhs, uvm_comparer comparer);
   extern function void    do_print  (uvm_printer printer);
@@ -77,7 +78,7 @@ endclass : xlr_gpp_tx
 
 function xlr_gpp_tx::new(string name = "");
   super.new(name);
-endfunction : new
+endfunction // Boilerplate
 
 
 function void xlr_gpp_tx::set_e_mode(string s); // can be -> def / rst_i / rst_o / start / busy / done)
@@ -95,6 +96,20 @@ endfunction : set_e_mode
 function void xlr_gpp_tx::set_f_mode(func_mode f); // can be -> MATMUL / CALCOPY
   // `honeyb("", $sformatf("Setting f_mode to: MEM[%0d]", f_mode))
   f_mode = f;
+endfunction
+
+
+function void xlr_gpp_tx::op_flush();
+  assert(e_mode == "rst_o" || e_mode == "busy")
+  else begin
+    `uvm_fatal(get_type_name(),
+      $sformatf("op_flush: invalid e_mode '%s' [allowed: rst_o/busy]", e_mode))
+      return;
+  end
+  host_regso       = '0;
+  host_regso_valid = '0;
+                    // Busy Always Valid
+  host_regso_valid[BUSY_IDX_REG] = 1'b1;
 endfunction
 
 
@@ -279,7 +294,7 @@ function string xlr_gpp_tx::convert2string_done(); // print done signal
   return s;
 endfunction : convert2string_done
 
-`endif // XLR_GPP_SEQ_ITEM_SV
+`endif // XLR_GPP_XLR_GPP_TX_SV
 
 
 //===============

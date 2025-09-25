@@ -30,7 +30,7 @@ endclass : xlr_gpp_config
 
 function xlr_gpp_config::new(string name = "");
   super.new(name);
-endfunction : new
+endfunction // Boilerplate
 
 `endif // XLR_GPP_CONFIG_SV
 

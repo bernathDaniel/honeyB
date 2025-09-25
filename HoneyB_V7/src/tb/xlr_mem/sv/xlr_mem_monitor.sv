@@ -53,12 +53,13 @@ endclass // Boilerplate + Helpers
 
 function xlr_mem_monitor::new(string name, uvm_component parent);
 	super.new(name, parent);
-	analysis_port_in 		= new("analysis_port_in",  this);
-	analysis_port_out 		= new("analysis_port_out", this);
 endfunction // Boilerplate
 
 
 function void xlr_mem_monitor::build_phase(uvm_phase phase);
+  super.build_phase(phase);
+  analysis_port_in 	= new("analysis_port_in",  this);
+	analysis_port_out = new("analysis_port_out", this);
 endfunction // Boilerplate
 
 
@@ -81,16 +82,12 @@ task xlr_mem_monitor::do_mon();
 		 // negedge Making sure that no timing violations will occur
 
 		forever begin // - OK - // Input rst_n handling.
-			m_xlr_mem_if.rst_n_negedge_wait();
-			if (!m_xlr_mem_if.get_rst_n()) begin
-																					#RACE_CTRL;
+			m_xlr_mem_if.rst_n_negedge_wait(); #RACE_CTRL;
 				m_trans_in.mem_rdata  = m_xlr_mem_if.get_rdata_all();
 				m_trans_in.set_e_mode("rst_i"); // "INPUT RESET" Event
-
 				`honeyb("MEM Monitor", "RESET(STIMULUS) detected, Broadcasting...")
 				  m_trans_in.print();
 				analysis_port_in.write(m_trans_in);
-			end
 			m_xlr_mem_if.rst_n_posedge_wait();
 		end
 
@@ -107,7 +104,6 @@ task xlr_mem_monitor::do_mon();
 			m_trans_in.set_e_mode("rd");
 
 			m_xlr_mem_if.clk_posedge_wait();
-
 			for (int m = 0; m < NUM_MEMS; m++) begin
 				if (rd_mems[m]) begin 
 															m_trans_in.mem_rdata[m] = m_xlr_mem_if.get_rdata(x_mem'(m));			
@@ -116,7 +112,6 @@ task xlr_mem_monitor::do_mon();
 
 			`honeyb("MEM Monitor", "READ detected, Broadcasting...")
 			  m_trans_in.print(); // Report
-
 			analysis_port_in.write(m_trans_in);
 		end
 
@@ -129,16 +124,12 @@ task xlr_mem_monitor::do_mon();
 		 // signals from the DUT.
 
 		forever begin // - OK - // Output rst_n handling.
-			m_xlr_mem_if.rst_n_negedge_wait();
-			if (!m_xlr_mem_if.get_rst_n()) begin
-																						#RACE_CTRL;
+			m_xlr_mem_if.rst_n_negedge_wait(); #RACE_CTRL;
 				get_all_trans_out(); // all output = 0 
 				m_trans_out.set_e_mode("rst_o"); // "OUTPUT_RESET" Event
-				                                    #RACE_CTRL;
 				`honeyb("MEM Monitor", "RESET(DUT RSP) detected, Broadcasting...")
           m_trans_out.print();
-				analysis_port_out.write(m_trans_out);
-			end
+				#RACE_CTRL; analysis_port_out.write(m_trans_out);
 			m_xlr_mem_if.rst_n_posedge_wait();
 		end
 
@@ -155,7 +146,6 @@ task xlr_mem_monitor::do_mon();
 			m_trans_out.set_e_mode("wr");
 
 			m_xlr_mem_if.clk_posedge_wait();
-
 			`honeyb("MEM Monitor", "WRITE detected, Broadcasting...")
 			  m_trans_out.print(); // Report
 			analysis_port_out.write(m_trans_out);

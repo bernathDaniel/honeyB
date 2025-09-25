@@ -26,10 +26,9 @@ package honeyb_pkg;
 	//=====================================================
 	// Delay Controls
 	//=====================================================
-    parameter real RST_CTRL 		= 1.1;
-    parameter real RACE_CTRL		= 0.1;
+    parameter real RST_CTRL 		= 1.01;
+    parameter real RACE_CTRL		= 0.01;
     parameter real DELTA_T_CTRL = 0.001;
-    parameter real PRNT_CTRL		= 0.001;
 	
 	//=====================================================
 	// HoneyB Debbuger Control
@@ -125,6 +124,11 @@ package honeyb_pkg;
   // Special Coverage Parameters
   //=====================================================
     
+    // [GPP] Coverage
+    localparam logic [31:0] START_MATMUL  = 32'h1;
+    localparam logic [31:0] START_CALCOPY = 32'h2;
+
+    // [MEM] Coverage
     localparam logic [NUM_MEMS-1:0][LOG2_LINES_PER_MEM-1:0] MEM_0_ADDR_0 = '0; // mem_addr[0] = 8'h01                                
 
     localparam logic [NUM_MEMS-1:0][LOG2_LINES_PER_MEM-1:0] MEM_0_ADDR_1 = 8'h01; // mem_addr[0] = 8'h01                                
@@ -157,7 +161,6 @@ package honeyb_pkg;
     class honeyb_cls;
       extern static function string honeyb_filename_extract(string file);
       extern static function void honeyb_printer(string component = "", string status = "", string msg = "", string file, int line);
-      
     endclass : honeyb_cls
 
     function void honeyb_cls::honeyb_printer(string component = "", string status = "", string msg = "", string file, int line);

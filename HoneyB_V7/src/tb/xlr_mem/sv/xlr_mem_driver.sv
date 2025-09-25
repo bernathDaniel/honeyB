@@ -40,24 +40,20 @@ endfunction : new
 
 
 task xlr_mem_driver::run_phase(uvm_phase phase);
-
-  // Report Statement
   `honeyb("MEM Driver", "  run_phase initialized...")
+    // Report
 
-    // Boot Sequence
-    //===============
+  // Boot Sequence
+  //===============
     m_xlr_mem_if.rst_n_negedge_wait();
     m_xlr_mem_if.pin_wig_rst();
     m_xlr_mem_if.rst_n_posedge_wait();
-
-    //--------------------------------------------
-
-    
+  //--------------------------------------------
   forever begin
     seq_item_port.get_next_item(req);
-
-    // Report Statement
+    
     `honeyb("MEM Driver", "New seq item received. driving...")
+      // Report
     phase.raise_objection(this);
     do_drive();
 
@@ -67,29 +63,22 @@ task xlr_mem_driver::run_phase(uvm_phase phase);
         phase.drop_objection(this);
       end
     join_none
-    
     seq_item_port.item_done();
   end
 endtask : run_phase
 
-task xlr_mem_driver::do_drive(); // User - Specific code for driver
+task xlr_mem_driver::do_drive();
+  m_xlr_mem_if.wait_for_dut_rd_request(); // DUT "Polling"
 
-  m_xlr_mem_if.wait_for_dut_rd_request(); // "DUT rd signal Polling" Step
-
-  rd_mems = m_xlr_mem_if.get_active_rd_mems(); // Active Memory
-
+  rd_mems = m_xlr_mem_if.get_active_rd_mems();
   for (int m = 0; m < NUM_MEMS; m++) begin
       if (rd_mems[m]) begin 
                             m_xlr_mem_if.pin_wig_rdata(x_mem'(m), req.mem_rdata[m]);
       end 
   end // Drive req for READ requests
 
-  create_rd_req_report();           // Useful for debugging if needed
-  
-  m_xlr_mem_if.clk_posedge_wait();  // Hold mem_rdata for 1 clk cycle !  
-  // "wr" polling on the DUT until one of the signals is raised.
-  m_xlr_mem_if.wait_for_dut_wr_request(); // "Polling" Step
-
+  create_rd_req_report();           // Useful for debugging
+  m_xlr_mem_if.clk_posedge_wait();  // Hold mem_rdata 1 clk
 endtask : do_drive
 
 //=============================================
@@ -102,7 +91,7 @@ endtask : do_drive
   endfunction // Complete flush for new incoming requests
 
   function void xlr_mem_driver::create_rd_req_report();
-    string rd_req_report = "Read from Memories: | ";
+    string rd_req_report = "Read from | ";
 
     bit rd_rep_ok = 1'b0; // Flags ok
 

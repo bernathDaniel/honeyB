@@ -24,7 +24,8 @@ module top_th;
   xlr_mem_if #(
     .NUM_MEMS             (2      ),
     .LOG2_LINES_PER_MEM   (8      )
-  ) _mem_if_28 ( // Naming Convention -  _mem_if_14 = [NUM_MEMS = 1, LOG2_LINES_PER_NUM = 4]
+  // Naming Convention [NUM_MEMS = 1, LOG2_LINES_PER_NUM = 4]
+  ) _mem_if_28 (
     .clk                  (clk    ),
     .rst_n                (rst_n  )
   );

@@ -32,6 +32,7 @@ class xlr_gpp_driver extends uvm_driver #(xlr_gpp_tx);
     extern task pin_wig_rst();
     extern task rst_n_negedge_wait();
     extern task rst_n_posedge_wait();
+    extern task done_wait_until_asserted();
 endclass // Boilerplate + Helpers
 
 
@@ -84,31 +85,20 @@ task xlr_gpp_driver::do_drive(); // - OK - // - Final - //
   // Explicit Check for START (for clarity)
   // ======================================
   for (int csr_idx = 0; csr_idx < 32; csr_idx++) begin
-    if (csr_idx == START_IDX_REG && req.host_regs_valid[csr_idx] == 1'b1) begin
-      vif.host_regsi     [START_IDX_REG]  <= req.host_regsi[START_IDX_REG];
-      vif.host_regs_valid[START_IDX_REG]  <= 1'b1;
-    end else if (req.host_regs_valid[csr_idx] == 1'b1) begin
-      vif.host_regsi[csr_idx]       <= req.host_regsi[csr_idx];
-      vif.host_regs_valid[csr_idx]  <= 1'b1;
-    end
-      // No else - let the undriven maintain state (REALISTIC CPU BEHAVIOR, REDUCES UNNECESSARY CYCLES)
+    vif.host_regsi[csr_idx]      <= req.host_regsi[csr_idx];
+    vif.host_regs_valid[csr_idx] <= req.host_regs_valid[csr_idx];
   end
-    
 
-  if (is_start_asserted  (req.host_regsi[START_IDX_REG] , req.host_regs_valid[START_IDX_REG]) ||
-      is_calcopy_asserted(req.host_regsi[START_IDX_REG] , req.host_regs_valid[START_IDX_REG])
+  if (is_start_asserted  (req.host_regsi[START_IDX_REG], req.host_regs_valid[START_IDX_REG]) ||
+      is_calcopy_asserted(req.host_regsi[START_IDX_REG], req.host_regs_valid[START_IDX_REG])
   ) begin
-    clk_posedge_wait(); // Hold START = 1 for 1 clk cycle                       
-
+    clk_posedge_wait(); // Hold for 1 clk
     vif.host_regsi      [START_IDX_REG]  <= '0; // de-assert
     vif.host_regs_valid [START_IDX_REG]  <= '0;
 
     `honeyb("GPP Driver", "waiting for DONE status...")
       // Report
-    req.set_e_mode("start");
-    while(done_is_deasserted( vif.host_regso      [DONE_IDX_REG],     // Wait for DONE assertion + Sudden RST Handling
-                              vif.host_regso_valid[DONE_IDX_REG]) &&  // Do this while:
-                              vif.rst_n)                              clk_posedge_wait();
+    done_wait_until_asserted();
     `honeyb("GPP Driver", "  DONE status received, moving on!")
       // Report
   end
@@ -136,4 +126,34 @@ endtask // Start Wiggling + Report
 
   task xlr_gpp_driver::rst_n_negedge_wait(); @(negedge vif.rst_n); endtask
   task xlr_gpp_driver::rst_n_posedge_wait(); @(posedge vif.rst_n); endtask
+
+  // Control & Status Methods
+  //=========================
+
+  task xlr_gpp_driver::done_wait_until_asserted();
+    while(done_is_deasserted( vif.host_regso      [DONE_IDX_REG],     // Wait for DONE
+                              vif.host_regso_valid[DONE_IDX_REG]))    // Do this while:
+                                                                      clk_posedge_wait();
+  endtask
+
 `endif // XLR_GPP_DRIVER_SV
+
+//=================================
+//        EXTRAS
+//=================================
+  /*
+    while(done_is_deasserted( vif.host_regso      [DONE_IDX_REG],     // Wait for DONE & Sudden RST Handling
+                              vif.host_regso_valid[DONE_IDX_REG]) &&  // Do this while:
+                              vif.rst_n)                              clk_posedge_wait();
+    
+    for (int csr_idx = 0; csr_idx < 32; csr_idx++) begin
+    if (csr_idx == START_IDX_REG && req.host_regs_valid[csr_idx] == 1'b1) begin
+      vif.host_regsi     [START_IDX_REG]  <= req.host_regsi[START_IDX_REG];
+      vif.host_regs_valid[START_IDX_REG]  <= 1'b1;
+    end else if (req.host_regs_valid[csr_idx] == 1'b1) begin
+      vif.host_regsi[csr_idx]       <= req.host_regsi[csr_idx];
+      vif.host_regs_valid[csr_idx]  <= 1'b1;
+    end
+      // No else - let the undriven maintain state (REALISTIC CPU BEHAVIOR, REDUCES UNNECESSARY CYCLES)
+    end
+  */

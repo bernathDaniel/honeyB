@@ -34,7 +34,7 @@ endfunction : new
 
 
 task xlr_mem_default_seq::body();
-  `honeyb("MEM SEQ", "New sequence starting...")
+  //`honeyb("MEM SEQ", "New sequence starting...")
 
   req = xlr_mem_tx::type_id::create("req");
   start_item(req); 
@@ -42,7 +42,7 @@ task xlr_mem_default_seq::body();
     `uvm_error("", "Failed to randomize transaction")
   finish_item(req); 
 
-  `honeyb("MEM SEQ", "Sequence completed...")
+  //`honeyb("MEM SEQ", "Sequence completed...")
 endtask : body
 
 

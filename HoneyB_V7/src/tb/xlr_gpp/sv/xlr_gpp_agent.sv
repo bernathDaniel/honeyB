@@ -39,11 +39,12 @@ endclass : xlr_gpp_agent
 
 function  xlr_gpp_agent::new(string name, uvm_component parent);
   super.new(name, parent);
-    analysis_port_in  = new("analysis_port_in"  , this);
-    analysis_port_out = new("analysis_port_out" , this);
-endfunction : new
+endfunction // Boilerplate
 
 function void xlr_gpp_agent::build_phase(uvm_phase phase);
+  super.build_phase(phase);
+  analysis_port_in  = new("analysis_port_in"  , this);
+  analysis_port_out = new("analysis_port_out" , this);
 
   if (!uvm_config_db #(xlr_gpp_config)::get(this, "", "config", m_config))
     `uvm_error("", "xlr_gpp config not found")

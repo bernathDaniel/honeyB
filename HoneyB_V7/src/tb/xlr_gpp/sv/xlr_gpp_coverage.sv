@@ -35,7 +35,7 @@ class xlr_gpp_coverage extends uvm_component;
     option.name         = "[GPP](IN) Coverage";
 
     cp_start: coverpoint tx_in.host_regsi[START_IDX_REG] {
-      bins start_vals   = {32'h00000001, 32'h00000002};
+      bins start_vals   = {START_MATMUL, START_CALCOPY};
     }
     
     cp_start_valid: coverpoint tx_in.host_regs_valid[START_IDX_REG] {
@@ -115,9 +115,10 @@ endfunction // Boilerplate + m_cov constrct.
 
 function void xlr_gpp_coverage::write_gpp_cov_in(input xlr_gpp_tx t);
   tx_in.copy(t); // C
-  if (m_xlr_gpp_config.coverage_enable) begin
-    cg_in.sample();
-    if (cg_in.get_inst_coverage() >= 100) cg_in_is_covered = 1;
+  if (m_xlr_gpp_config.coverage_enable)
+  begin
+        cg_in.sample();
+        if (cg_in.get_inst_coverage() >= 100) cg_in_is_covered = 1;
   end
 endfunction
 
@@ -125,8 +126,8 @@ function void xlr_gpp_coverage::write_gpp_cov_out(input xlr_gpp_tx t);
   tx_out.copy(t); // C
   if (m_xlr_gpp_config.coverage_enable)
   begin
-    cg_out.sample();
-    if (cg_out.get_inst_coverage() >= 100) cg_out_is_covered = 1;
+        cg_out.sample();
+        if (cg_out.get_inst_coverage() >= 100) cg_out_is_covered = 1;
   end
 endfunction
 

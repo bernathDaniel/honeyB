@@ -34,7 +34,7 @@ endfunction : new
 
 
 task xlr_gpp_default_seq::body();
-  `honeyb("GPP SEQ", "New sequence starting...")
+  //`honeyb("GPP SEQ", "New sequence starting...")
 
   req = xlr_gpp_tx::type_id::create("req");
   start_item(req); 
@@ -42,7 +42,7 @@ task xlr_gpp_default_seq::body();
     `uvm_error("", "Failed to randomize transaction")
   finish_item(req); 
 
-  `honeyb("GPP SEQ", "Sequence completed...")
+  //`honeyb("GPP SEQ", "Sequence completed...")
 endtask : body
 
 

@@ -18,13 +18,12 @@ class xlr_mem_config extends uvm_object;
   //=======================================================
   // Declarations (Parameters & Strings)
   //=======================================================
-
   bit                     mem_is_used;
   int unsigned            rand_seed;                    // INIT_RANDOM - Keep same random values (Easy Debug Mode)
-  bit                     uninit_is_error;
 
   // Memory Debug:
   bit                     enable_write_dumps;
+  int                     sim_dump_limit;               // Limit # of snapshots to avoid overdumping
   string                  dump_directory;
 
   // globals;

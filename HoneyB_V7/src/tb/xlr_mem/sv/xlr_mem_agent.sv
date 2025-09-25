@@ -30,7 +30,7 @@ class xlr_mem_agent extends uvm_agent;
 	//===================================================================
 																				//=============================
 	xlr_mem_driver 						m_driver;		// STEP #1 - For This Override
-																				xlr_mem_frontdoor_driver 	fd;
+																				xlr_mem_service_driver 	m_service_driver;
 	//===================================================================
 
 	xlr_mem_model				 			m_model;
@@ -47,11 +47,12 @@ endclass : xlr_mem_agent
 
 function  xlr_mem_agent::new(string name, uvm_component parent);
 	super.new(name, parent);
-	analysis_port_in 	= new("analysis_port_in", this);
-	analysis_port_out = new("analysis_port_out", this);
-endfunction : new
+endfunction // Boilerplate
 
 function void xlr_mem_agent::build_phase(uvm_phase phase);
+  super.build_phase(phase);
+  analysis_port_in 	= new("analysis_port_in", this);
+	analysis_port_out = new("analysis_port_out", this);
 
 	if (!uvm_config_db #(xlr_mem_config)::get(this, "", "config", m_config)) begin
 		`uvm_error("", "xlr_mem config not found")
@@ -85,12 +86,12 @@ function void xlr_mem_agent::connect_phase(uvm_phase phase);
 								if (m_model == null) 
 									`uvm_fatal("CONFIG", "mem_is_used=1 but m_model not created")
                                                             //===============================================================
-                      if (!$cast(fd, m_driver))							//										THIS IS STEP #2 - THE IMPORTANT ONE
-                        `uvm_fatal("FACTORY", "Override failed: m_driver is not xlr_mem_frontdoor_driver");
-                      fd.model_bt.connect(m_model.bt_imp);  // safe: fd is the subclass // If 1 -> Connect mem model & Driver
+                      if (!$cast(m_service_driver, m_driver))							//										THIS IS STEP #2 - THE IMPORTANT ONE
+                        `uvm_fatal("FACTORY", "Override failed: m_driver is not xlr_mem_service_driver");
+                      m_service_driver.model_bt.connect(m_model.bt_imp);  // safe: m_service_driver is the subclass // If 1 -> Connect mem model & Driver
                                                             //===============================================================
                                                             //
-                      fd.m_xlr_mem_if = m_xlr_mem_if; 			// Need to connect the frontdoor_driver as well.
+                      m_service_driver.m_xlr_mem_if = m_xlr_mem_if; 			// Need to connect the service_driver as well.
 
 		end
 	end

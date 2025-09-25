@@ -65,9 +65,8 @@ function void reference::send_xlr_mem_input(xlr_mem_tx t);
     tx = xlr_mem_tx::type_id::create("tx");             // Factorize
     tx.copy(t);                                         // Copy
 // ------------------------------------------------------
-  if (tx.e_mode == "rd") begin // Event: rd -> wr
-
-    tx.set_e_mode("wr"); // set e_mode
+  if (tx.e_mode == "rd") begin
+    tx.set_e_mode("wr");
     // the expected signals for writing back
     tx.mem_be   [MEM0] = 32'hFFFFFFFF; // Write Gating En
     tx.mem_wr   [MEM0] = 1'b1;
@@ -78,35 +77,24 @@ function void reference::send_xlr_mem_input(xlr_mem_tx t);
     tx.mem_addr [MEM1] = '0;
     tx.mem_wdata[MEM1] = '0;
     //-----------------
-
     tx.mem_wdata[MEM0][0] = tx.mem_rdata[MEM0][0]*tx.mem_rdata[MEM0][4] + tx.mem_rdata[MEM0][1]*tx.mem_rdata[MEM0][6];
     tx.mem_wdata[MEM0][1] = tx.mem_rdata[MEM0][0]*tx.mem_rdata[MEM0][5] + tx.mem_rdata[MEM0][1]*tx.mem_rdata[MEM0][7];
     tx.mem_wdata[MEM0][2] = tx.mem_rdata[MEM0][2]*tx.mem_rdata[MEM0][4] + tx.mem_rdata[MEM0][3]*tx.mem_rdata[MEM0][6];
     tx.mem_wdata[MEM0][3] = tx.mem_rdata[MEM0][2]*tx.mem_rdata[MEM0][5] + tx.mem_rdata[MEM0][3]*tx.mem_rdata[MEM0][7];
-    
-    for ( int i = 4; i < 8; i++ )
-      tx.mem_wdata[MEM0][i] = '0; // last 4 words expected as 0.
-
-    if (f_mode == CALCOPY) begin
-      tx.calcopy(MEM1, MEM0);
-    end // Copying result into MEM1
+    //-----------------
+    for (int i=4; i<8; i++) tx.mem_wdata[MEM0][i] = '0; // last 4 words expected as 0.
+    if  (f_mode == CALCOPY) tx.calcopy(MEM1, MEM0);     // Copying result into MEM1
 
     `honeyb("REF Model", "READ Request Received: ", "Generating Prediction...")
       //tx.print(); // Report
     analysis_port_mem.write(tx);
-  end else begin
-    if (tx.e_mode == "rst_i") begin
-      `honeyb("REF Model", "RESET(MEM) Received: ", "Generating Prediction...")
-      tx.mem_wdata  = '0;
-      tx.mem_be     = '0;
-      tx.mem_rd     = '0;
-      tx.mem_wr     = '0;
-      tx.mem_addr   = '0;
-      tx.set_e_mode("rst_o");
-      analysis_port_mem.write(tx);
-    end // Chain of Events: rd -> wr & rst_i -> rst_o 
-  end
-endfunction : send_xlr_mem_input
+  end else if (tx.e_mode == "rst_i") begin
+    `honeyb("REF Model", "RESET(MEM) Received: ", "Generating Prediction...")
+    tx.set_e_mode("rst_o");
+    tx.op_flush();
+    analysis_port_mem.write(tx);
+  end else `honeyb("REF Model", "Event Mismatch, Check me out!") 
+endfunction // Chain of Events: rd -> *FLUSH* -> wr & rst_i -> rst_o
 
 function void reference::send_xlr_gpp_input(xlr_gpp_tx t);
 
@@ -126,38 +114,26 @@ function void reference::send_xlr_gpp_input(xlr_gpp_tx t);
         `honeyb("REF Model", "START(MATMUL) Received: ", "Generating Prediction...")
           $display(); // CLI
       end
-    //=====================// "start" -> "busy"
-
+    //=====================//  "start" -> "busy"
+      tx.set_e_mode("busy"); // set e_mode
       tx.host_regso       [BUSY_IDX_REG] = 32'h1;
       tx.host_regso_valid [BUSY_IDX_REG] =  1'b1;
-
-      tx.set_e_mode("busy"); // Report + e_mode
+      //------------------
       `honeyb("REF Model", "Sent busy...")
       analysis_port_gpp.write(tx);
-    //=====================// "busy" -> "done"
-
+    //=====================// "busy"-> *FLUSH* -> "done"
+      tx.op_flush();
+      tx.set_e_mode("done"); //set e_mode
       tx.host_regso       [DONE_IDX_REG] = 32'h1; // done signal
       tx.host_regso_valid [DONE_IDX_REG] =  1'b1; // Valid done.
-
-      tx.host_regso       [BUSY_IDX_REG] = 32'h0; // Flush Busy signal
-      tx.host_regso_valid [BUSY_IDX_REG] =  1'b1;
-
-      tx.set_e_mode("done"); // Report + e_mode
+      //------------------
       `honeyb("REF Model", "Sent done...")
-      
       analysis_port_gpp.write(tx);
     end else if (tx.e_mode == "rst_i") begin // "rst_i" -> "rst_o"
-
-      for (int reg_idx = 0; reg_idx < 32; reg_idx++) begin
-        if (reg_idx == BUSY_IDX_REG) tx.host_regso_valid[reg_idx] = 1'b1;
-        else tx.host_regso_valid[reg_idx] = 1'b0;
-      end // Assert 0 for all except for BUSY_IDX_REG
-      tx.host_regso = '0;
       tx.set_e_mode("rst_o"); // [EVENT](OUTPUT_RESET) 
-      
+      tx.op_flush();
       `honeyb("REF Model", "RESET(GPP) Received: ", "Generating Prediction...")
         //tx.print();// Report
-      
       analysis_port_gpp.write(tx);
     end else `honeyb("REF Model", "Event Mismatch, Check me out!")
 endfunction // Chain of Events: start -> busy -> done & "rst_i" -> "rst_o"

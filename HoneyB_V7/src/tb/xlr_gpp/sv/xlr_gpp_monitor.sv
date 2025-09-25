@@ -45,17 +45,20 @@ class xlr_gpp_monitor extends uvm_monitor;
     extern task pin_wig_rst();
     extern task rst_n_negedge_wait();
     extern task rst_n_posedge_wait();
+    extern function void flush_trans_in();
+    extern function void flush_trans_out();
 endclass : xlr_gpp_monitor // Boilerplate + Helpers
 
 
 function xlr_gpp_monitor::new(string name, uvm_component parent);
   super.new(name, parent);
-  analysis_port_in  = new("analysis_port_in"  , this);
-  analysis_port_out = new("analysis_port_out" , this);
 endfunction // Boilerplate
 
 
 function void xlr_gpp_monitor::build_phase(uvm_phase phase);
+  super.build_phase(phase);
+  analysis_port_in  = new("analysis_port_in"  , this);
+  analysis_port_out = new("analysis_port_out" , this);
 endfunction : build_phase // Boilerplate
 
 
@@ -82,17 +85,13 @@ task xlr_gpp_monitor::do_mon(); // - OK - // - FINAL - //
      // negedge Making sure that no timing violations will occur
 
     forever begin // - OK - // Input rst_n handling.
-      rst_n_negedge_wait();
-      if (!get_rst_n()) begin
-                              #RACE_CTRL;
+      rst_n_negedge_wait(); #RACE_CTRL;
         m_trans_in.host_regsi       = vif.host_regsi;
         m_trans_in.host_regs_valid  = vif.host_regs_valid;
         m_trans_in.set_e_mode("rst_i"); // sampling & e_mode set
-
         `honeyb("GPP Monitor", "RESET(STIMULUS) detected, Broadcasting...")
           m_trans_in.print();
         analysis_port_in.write(m_trans_in);
-      end
       rst_n_posedge_wait();
     end
     
@@ -102,7 +101,7 @@ task xlr_gpp_monitor::do_mon(); // - OK - // - FINAL - //
       if (is_start_asserted  (vif.host_regsi[START_IDX_REG] , vif.host_regs_valid[START_IDX_REG]) ||
           is_calcopy_asserted(vif.host_regsi[START_IDX_REG] , vif.host_regs_valid[START_IDX_REG])
       ) begin
-        
+        flush_trans_in();
         m_trans_in.host_regsi     [START_IDX_REG] = vif.host_regsi     [START_IDX_REG];
         m_trans_in.host_regs_valid[START_IDX_REG] = vif.host_regs_valid[START_IDX_REG];
         m_trans_in.set_e_mode("start");
@@ -126,28 +125,23 @@ task xlr_gpp_monitor::do_mon(); // - OK - // - FINAL - //
      // signals from the DUT.
 
     forever begin // - OK - // Output rst_n handling.
-      rst_n_negedge_wait();
-      if (!get_rst_n()) begin
-                              #RACE_CTRL;
+      rst_n_negedge_wait(); #RACE_CTRL;
         m_trans_out.host_regso        = vif.host_regso;
         m_trans_out.host_regso_valid  = vif.host_regso_valid;
         m_trans_out.set_e_mode("rst_o"); // sampling & e_mode set
-                              #RACE_CTRL;
         `honeyb("GPP Monitor", "RESET(DUT RSP) detected, Broadcasting...")
           m_trans_out.print();
-        analysis_port_out.write(m_trans_out);
-      end
+        #RACE_CTRL; analysis_port_out.write(m_trans_out);
       rst_n_posedge_wait();
     end
 
     
     forever begin // - OK - //BUSY_IDX_REG Sampler
-      clk_posedge_wait();
-                          #RACE_CTRL;
+      clk_posedge_wait(); #RACE_CTRL;
       if ((busy_sent == 1'b0) && 
         busy_is_asserted(vif.host_regso[BUSY_IDX_REG], vif.host_regso_valid[BUSY_IDX_REG]))
       begin // is asserted
-        
+        flush_trans_out();
         busy_sent = 1'b1; // Set busy flag
         done_sent = 1'b0; // Reset done flag
         
@@ -158,18 +152,16 @@ task xlr_gpp_monitor::do_mon(); // - OK - // - FINAL - //
 
         `honeyb("GPP Monitor", "BUSY status detected, Broadcasting...")
           m_trans_out.print();// Report
-
         analysis_port_out.write(m_trans_out);
       end
     end
 
     forever begin // - OK - // DONE_IDX_REG Sampler
-      clk_posedge_wait();
-                          #RACE_CTRL;
+      clk_posedge_wait(); #RACE_CTRL;
       if ((done_sent == 1'b0) && 
         done_is_asserted(vif.host_regso[DONE_IDX_REG], vif.host_regso_valid[DONE_IDX_REG]))
       begin // is asserted
-
+        flush_trans_out();
         busy_sent = 1'b0; // Reset busy flag
         done_sent = 1'b1; // Set done flag
         
@@ -188,6 +180,16 @@ endtask : do_mon
 //=========================================================
 //                    HELPER METHODS
 //=========================================================
+  // Flushers
+	//===========
+	function void xlr_gpp_monitor::flush_trans_in(); 
+		m_trans_in.host_regsi = '0; m_trans_in.host_regs_valid 	= '0;
+	endfunction // Complete flush for new incoming samples (IN)
+
+	function void xlr_gpp_monitor::flush_trans_out(); 
+    m_trans_out.host_regso = '0; m_trans_out.host_regso_valid 	= '0;
+	endfunction // Complete flush for new incoming samples (OUT)
+  
   // Clock Methods
   // =============
 
