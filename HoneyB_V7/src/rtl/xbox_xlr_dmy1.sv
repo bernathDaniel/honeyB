@@ -79,9 +79,6 @@ module xbox_xlr_dmy1 #(parameter NUM_MEMS=1,LOG2_LINES_PER_MEM=4)  (
   } regs_idx;
 //==================================================================================================================================
 // DECLARATIONS
-  /**********************************************************************/
-  /*                             DECLARATIONS                           */
-  /**********************************************************************/
 
   logic start_honey;    // The actual signal fed into our FSM.
   logic calcopy_honey;  // The calcopy honey
@@ -93,10 +90,7 @@ module xbox_xlr_dmy1 #(parameter NUM_MEMS=1,LOG2_LINES_PER_MEM=4)  (
   logic [NUM_MEMS-1:0][7:0][31:0] mem_arr;             // mem buffer
   logic [NUM_MEMS-1:0][7:0][31:0] res_arr, res_arr_ps; // pre-sampling + buffer for write
 //==================================================================================================================================
-
-  /**********************************************************************/
-  /*                         HOST REGS INTERFACE                        */
-  /**********************************************************************/
+// HOST REGS INTERFACE 
 
   logic [31:0][31:0] host_regs_data_out_ps; // pre-sampled CS output 
 
@@ -125,13 +119,10 @@ module xbox_xlr_dmy1 #(parameter NUM_MEMS=1,LOG2_LINES_PER_MEM=4)  (
     host_regs_valid_out[BUSY_REG_IDX] = 1'b1;
   end
 
-// CSR Cloning Nomenclatures
-// ======================================================
-assign start_honey    = (host_regs[START_REG_IDX] == 32'h1) && host_regs_valid_pulse[START_REG_IDX];
-assign calcopy_honey  = (host_regs[START_REG_IDX] == 32'h2) && host_regs_valid_pulse[START_REG_IDX];
-
-//==================================================================================================================================
-
+  // GPR Cloning Nomenclatures
+  //======================================================
+  assign start_honey    = (host_regs[START_REG_IDX] == 32'h1) && host_regs_valid_pulse[START_REG_IDX];
+  assign calcopy_honey  = (host_regs[START_REG_IDX] == 32'h2) && host_regs_valid_pulse[START_REG_IDX];
 //==================================================================================================================================
 
   /**********************************************************************/
