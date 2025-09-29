@@ -4,8 +4,8 @@ This repository contains the final project developed at the
 **Alexander Kofkin Faculty of Engineering, Bar-Ilan University**  
 **Nano-Electronics Department – EnICS Labs**  
 
-It provides a **complete & scalable UVM-based verification environment** for SoC accelerator validation,
-featuring a unified testbench architecture, dual-agent support and integration-ready RAL files.
+It provides a **complete and scalable UVM-based verification environment** for SoC accelerator validation,
+featuring a unified testbench architecture, dual-agent support, and integration-ready RAL files.
 
 ## Author
 - **Daniel Bernath**
